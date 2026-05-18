@@ -68,6 +68,7 @@ export async function commitToProposal(id: string) {
   const res = await fetch(`${BASE}/proposals/${id}/commit`, {
     method: 'POST',
     headers: headers(),
+    body: '{}',
   })
   if (!res.ok) {
     const err = await res.json().catch(() => ({}))
@@ -80,6 +81,7 @@ export async function withdrawCommitment(id: string) {
   const res = await fetch(`${BASE}/proposals/${id}/commit`, {
     method: 'DELETE',
     headers: headers(),
+    body: '{}',
   })
   if (!res.ok) throw new Error('Failed to withdraw')
   return res.json()

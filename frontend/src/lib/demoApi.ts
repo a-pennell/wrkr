@@ -31,7 +31,7 @@ export async function createProposal(): Promise<{ id: string }> {
 }
 
 export async function commitToProposal(id: string) {
-  const res = await fetch(`${DEMO}/proposals/${id}/commit`, { method: 'POST', headers: headers() })
+  const res = await fetch(`${DEMO}/proposals/${id}/commit`, { method: 'POST', headers: headers(), body: '{}' })
   if (!res.ok) {
     const err = await res.json().catch(() => ({}))
     throw new Error((err as { error?: string }).error ?? 'Failed to commit')
@@ -40,7 +40,7 @@ export async function commitToProposal(id: string) {
 }
 
 export async function withdrawCommitment(id: string) {
-  const res = await fetch(`${DEMO}/proposals/${id}/commit`, { method: 'DELETE', headers: headers() })
+  const res = await fetch(`${DEMO}/proposals/${id}/commit`, { method: 'DELETE', headers: headers(), body: '{}' })
   if (!res.ok) throw new Error('Failed to withdraw')
   return res.json()
 }
