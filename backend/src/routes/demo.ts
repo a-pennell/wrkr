@@ -2,7 +2,7 @@ import { FastifyInstance } from 'fastify'
 import { randomUUID } from 'crypto'
 import prisma from '../lib/prisma.js'
 
-const DEMO_WS_ID = '00000000-0000-0000-0000-000000000001'
+const DEMO_DOMAIN_HASH = '__demo__'
 
 const SEED = [
   {
@@ -48,13 +48,13 @@ const SEED = [
 ]
 
 async function seedOnce() {
-  await prisma.workspace.upsert({
-    where: { domainHash: 'demo' },
-    create: { id: DEMO_WS_ID, domainHash: 'demo' },
+  const ws = await prisma.workspace.upsert({
+    where: { domainHash: DEMO_DOMAIN_HASH },
+    create: { domainHash: DEMO_DOMAIN_HASH },
     update: {},
   })
 
-  const count = await prisma.proposal.count({ where: { workspaceId: DEMO_WS_ID } })
+  const count = await prisma.proposal.count({ where: { workspaceId: ws.id } })
   if (count > 0) return
 
   for (let i = 0; i < SEED.length; i++) {
@@ -64,7 +64,7 @@ async function seedOnce() {
 
     const proposal = await prisma.proposal.create({
       data: {
-        workspaceId: DEMO_WS_ID,
+        workspaceId: ws.id,
         category: s.category,
         templateFields: { framing: s.framing },
         thresholdType: 'count',
@@ -89,13 +89,14 @@ async function seedOnce() {
 export default async function demoRoutes(fastify: FastifyInstance) {
   fastify.get('/demo/workspace', async () => {
     await seedOnce()
+    const ws = await prisma.workspace.findUniqueOrThrow({ where: { domainHash: DEMO_DOMAIN_HASH } })
     const proposals = await prisma.proposal.findMany({
-      where: { workspaceId: DEMO_WS_ID },
+      where: { workspaceId: ws.id },
       orderBy: { createdAt: 'desc' },
       include: { _count: { select: { commitments: { where: { withdrawnAt: null } } } } },
     })
     return {
-      workspaceId: DEMO_WS_ID,
+      workspaceId: ws.id,
       memberCount: 47,
       proposals: proposals.map(p => ({ ...p, commitmentCount: p._count.commitments, _count: undefined })),
     }
@@ -103,8 +104,9 @@ export default async function demoRoutes(fastify: FastifyInstance) {
 
   fastify.get<{ Params: { id: string } }>('/demo/proposals/:id', async (req, reply) => {
     const session = req.headers['x-session-id'] as string | undefined
+    const ws = await prisma.workspace.findUnique({ where: { domainHash: DEMO_DOMAIN_HASH } })
     const proposal = await prisma.proposal.findFirst({
-      where: { id: req.params.id, workspaceId: DEMO_WS_ID },
+      where: { id: req.params.id, workspaceId: ws?.id },
       include: { _count: { select: { commitments: { where: { withdrawnAt: null } } } } },
     })
     if (!proposal) return reply.code(404).send({ error: 'Not found' })
@@ -120,7 +122,8 @@ export default async function demoRoutes(fastify: FastifyInstance) {
     const session = req.headers['x-session-id'] as string | undefined
     if (!session) return reply.code(400).send({ error: 'No session' })
 
-    const proposal = await prisma.proposal.findFirst({ where: { id: req.params.id, workspaceId: DEMO_WS_ID } })
+    const ws = await prisma.workspace.findUnique({ where: { domainHash: DEMO_DOMAIN_HASH } })
+    const proposal = await prisma.proposal.findFirst({ where: { id: req.params.id, workspaceId: ws?.id } })
     if (!proposal) return reply.code(404).send({ error: 'Not found' })
     if (proposal.status !== 'active') return reply.code(400).send({ error: 'Proposal is not active' })
 
@@ -138,7 +141,8 @@ export default async function demoRoutes(fastify: FastifyInstance) {
 
   fastify.delete<{ Params: { id: string } }>('/demo/proposals/:id/commit', async (req, reply) => {
     const session = req.headers['x-session-id'] as string | undefined
-    const proposal = await prisma.proposal.findFirst({ where: { id: req.params.id, workspaceId: DEMO_WS_ID } })
+    const ws = await prisma.workspace.findUnique({ where: { domainHash: DEMO_DOMAIN_HASH } })
+    const proposal = await prisma.proposal.findFirst({ where: { id: req.params.id, workspaceId: ws?.id } })
     if (!proposal) return reply.code(404).send({ error: 'Not found' })
     if (proposal.status === 'activated') return reply.code(400).send({ error: 'Cannot withdraw after activation' })
 
