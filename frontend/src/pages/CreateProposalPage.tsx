@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { createProposal } from '../lib/api'
+import * as realApi from '../lib/api'
 
 const CATEGORIES = [
   { id: 'compensation', label: 'Compensation', desc: 'Pay, benefits, equity, bonuses, or financial wellbeing' },
@@ -45,7 +45,7 @@ export default function CreateProposalPage() {
   async function handlePublish() {
     setSubmitting(true)
     try {
-      const { id } = await createProposal({
+      const { id } = await realApi.createProposal({
         category: form.category,
         templateFields: { framing: form.framing.trim() },
         thresholdType: form.thresholdType,

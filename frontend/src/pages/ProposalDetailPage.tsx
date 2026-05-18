@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { getProposal, commitToProposal, withdrawCommitment, type Proposal } from '../lib/api'
+import type { Proposal } from '../lib/api'
+import { useApi } from '../lib/ApiContext'
 
 const CATEGORY_LABEL: Record<string, string> = {
   compensation: 'Compensation',
@@ -15,6 +16,7 @@ function daysRemaining(deadline: string) {
 const DISPLAY: React.CSSProperties = { fontFamily: "'Big Shoulders Display', sans-serif" }
 
 export default function ProposalDetailPage() {
+  const { getProposal, commitToProposal, withdrawCommitment, isDemo } = useApi()
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const [proposal, setProposal] = useState<Proposal | null>(null)
@@ -106,7 +108,7 @@ export default function ProposalDetailPage() {
       <div style={{ maxWidth: 720, margin: '0 auto', padding: '0 28px' }}>
         {/* Back link */}
         <button
-          onClick={() => navigate('/')}
+          onClick={() => navigate(isDemo ? '/demo' : '/')}
           style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: '0.72rem', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--cream-dim)', background: 'none', border: 'none', cursor: 'pointer', padding: '24px 0 22px' }}
         >
           ← Workspace

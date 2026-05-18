@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { getWorkspace, type Proposal, type Workspace } from '../lib/api'
+import type { Proposal, Workspace } from '../lib/api'
+import { useApi } from '../lib/ApiContext'
 
 const CATEGORY_LABEL: Record<string, string> = {
   compensation: 'Compensation',
@@ -12,7 +13,7 @@ function daysRemaining(deadline: string) {
   return Math.max(0, Math.ceil((new Date(deadline).getTime() - Date.now()) / 86_400_000))
 }
 
-function ProposalItem({ proposal }: { proposal: Proposal }) {
+function ProposalItem({ proposal, isDemo }: { proposal: Proposal; isDemo: boolean }) {
   const navigate = useNavigate()
   const days = daysRemaining(proposal.deadline)
   const isActivated = proposal.status === 'activated'
@@ -23,7 +24,7 @@ function ProposalItem({ proposal }: { proposal: Proposal }) {
 
   return (
     <div
-      onClick={() => navigate(`/proposal/${proposal.id}`)}
+      onClick={() => navigate(isDemo ? `/demo/proposal/${proposal.id}` : `/proposal/${proposal.id}`)}
       style={{ borderTop: '1px solid var(--border)', padding: '28px 0', cursor: 'pointer' }}
       onMouseEnter={e => (e.currentTarget.querySelector('.framing-text') as HTMLElement | null)?.style && ((e.currentTarget.querySelector('.framing-text') as HTMLElement).style.color = 'var(--green-glow)')}
       onMouseLeave={e => (e.currentTarget.querySelector('.framing-text') as HTMLElement | null)?.style && ((e.currentTarget.querySelector('.framing-text') as HTMLElement).style.color = 'var(--cream)')}
@@ -58,6 +59,7 @@ function ProposalItem({ proposal }: { proposal: Proposal }) {
 }
 
 export default function WorkspacePage() {
+  const { getWorkspace, isDemo } = useApi()
   const [workspace, setWorkspace] = useState<Workspace | null>(null)
   const [error, setError] = useState('')
   const navigate = useNavigate()
@@ -140,7 +142,7 @@ export default function WorkspacePage() {
                   </button>
                 </div>
                 <div style={{ borderBottom: '1px solid var(--border)' }}>
-                  {active.map(p => <ProposalItem key={p.id} proposal={p} />)}
+                  {active.map(p => <ProposalItem key={p.id} proposal={p} isDemo={isDemo} />)}
                 </div>
               </div>
             )}
@@ -156,7 +158,7 @@ export default function WorkspacePage() {
                   )}
                 </div>
                 <div style={{ borderBottom: '1px solid var(--border)' }}>
-                  {closed.map(p => <ProposalItem key={p.id} proposal={p} />)}
+                  {closed.map(p => <ProposalItem key={p.id} proposal={p} isDemo={isDemo} />)}
                 </div>
               </div>
             )}
