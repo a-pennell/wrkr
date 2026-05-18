@@ -85,7 +85,9 @@ export default function ProposalDetailPage() {
     )
   }
 
-  const framing = (proposal.templateFields as { framing?: string }).framing ?? '—'
+  const fields = proposal.templateFields as { title?: string; framing?: string }
+  const framing = fields.framing ?? '—'
+  const title = fields.title
   const days = daysRemaining(proposal.deadline)
   const isActivated = proposal.status === 'activated'
   const isExpired = proposal.status === 'expired'
@@ -120,6 +122,13 @@ export default function ProposalDetailPage() {
         <div style={{ fontSize: '0.65rem', fontWeight: 600, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--green)', opacity: 0.85, marginBottom: 14 }}>
           {CATEGORY_LABEL[proposal.category] ?? proposal.category}
         </div>
+
+        {/* Title */}
+        {title && (
+          <div style={{ fontFamily: "'Big Shoulders Display', sans-serif", fontWeight: 900, fontSize: 'clamp(1.8rem, 5vw, 2.6rem)', lineHeight: 1.05, textTransform: 'uppercase', color: 'var(--cream)', marginBottom: 20 }}>
+            {title}
+          </div>
+        )}
 
         {/* Framing body */}
         <p style={{ fontSize: '0.92rem', lineHeight: 1.68, color: 'var(--cream-dim)', maxWidth: 520, marginBottom: 20 }}>

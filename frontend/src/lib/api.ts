@@ -19,7 +19,7 @@ function headers(): HeadersInit {
 export interface Proposal {
   id: string
   category: string
-  templateFields: { framing: string }
+  templateFields: { title?: string; framing: string }
   thresholdType: string
   thresholdValue: number
   deadline: string
@@ -50,7 +50,7 @@ export async function getProposal(id: string): Promise<Proposal> {
 
 export async function createProposal(data: {
   category: string
-  templateFields: { framing: string }
+  templateFields: { title?: string; framing: string }
   thresholdType: string
   thresholdValue: number
   deadlineDays: number

@@ -8,7 +8,13 @@ const CATEGORIES = [
   { id: 'other', label: 'Other', desc: 'Communication, culture, safety, or anything else' },
 ]
 
-const PLACEHOLDERS: Record<string, string> = {
+const TITLE_PLACEHOLDERS: Record<string, string> = {
+  compensation: 'e.g. Pay freeze has not kept pace with inflation',
+  working_conditions: 'e.g. Rigid start times create unnecessary hardship',
+  other: 'e.g. Leadership communication needs to improve',
+}
+
+const FRAMING_PLACEHOLDERS: Record<string, string> = {
   compensation: 'e.g. The mandatory pay freeze has not kept pace with regional inflation over the past 18 months, affecting workers across all grade levels...',
   working_conditions: 'e.g. The mandatory 9am start time creates difficulty for workers with childcare or long commutes, and has no clear operational justification...',
   other: 'Describe the concern in a way any coworker would recognise.',
@@ -16,6 +22,7 @@ const PLACEHOLDERS: Record<string, string> = {
 
 interface FormState {
   category: string
+  title: string
   framing: string
   thresholdType: 'count'
   thresholdValue: number
@@ -30,6 +37,7 @@ export default function CreateProposalPage() {
   const [submitting, setSubmitting] = useState(false)
   const [form, setForm] = useState<FormState>({
     category: '',
+    title: '',
     framing: '',
     thresholdType: 'count',
     thresholdValue: 5,
@@ -38,7 +46,7 @@ export default function CreateProposalPage() {
 
   const canNext =
     (step === 1 && form.category !== '') ||
-    (step === 2 && form.framing.trim().length >= 20) ||
+    (step === 2 && form.title.trim().length >= 5 && form.framing.trim().length >= 20) ||
     (step === 3 && form.thresholdValue >= 1) ||
     step === 4
 
@@ -47,7 +55,7 @@ export default function CreateProposalPage() {
     try {
       const { id } = await realApi.createProposal({
         category: form.category,
-        templateFields: { framing: form.framing.trim() },
+        templateFields: { title: form.title.trim(), framing: form.framing.trim() },
         thresholdType: form.thresholdType,
         thresholdValue: form.thresholdValue,
         deadlineDays: form.deadlineDays,
@@ -141,6 +149,37 @@ export default function CreateProposalPage() {
             <p style={{ fontSize: '0.85rem', color: 'var(--cream-dim)', marginBottom: 36 }}>
               Be specific and factual. Avoid naming individuals.
             </p>
+            <div style={{ marginBottom: 24 }}>
+              <label style={{ fontSize: '0.63rem', fontWeight: 600, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--green)', opacity: 0.8, marginBottom: 10, display: 'block' }}>
+                Title
+              </label>
+              <input
+                type="text"
+                value={form.title}
+                onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
+                placeholder={TITLE_PLACEHOLDERS[form.category]}
+                maxLength={80}
+                style={{
+                  width: '100%',
+                  background: 'var(--surface)',
+                  border: '1px solid var(--border-mid)',
+                  color: 'var(--cream)',
+                  fontFamily: "'Big Shoulders Display', sans-serif",
+                  fontWeight: 700,
+                  fontSize: '1.2rem',
+                  letterSpacing: '0.02em',
+                  padding: '14px 16px',
+                  outline: 'none',
+                  transition: 'border-color 0.15s',
+                }}
+                onFocus={e => e.target.style.borderColor = 'var(--green)'}
+                onBlur={e => e.target.style.borderColor = 'var(--border-mid)'}
+              />
+              <div style={{ textAlign: 'right', fontSize: '0.68rem', color: 'var(--cream-faint)', marginTop: 6 }}>
+                {form.title.length}/80
+              </div>
+            </div>
+
             <div style={{ marginBottom: 32 }}>
               <label style={{ fontSize: '0.63rem', fontWeight: 600, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--green)', opacity: 0.8, marginBottom: 10, display: 'block' }}>
                 What is the specific issue?
@@ -148,7 +187,7 @@ export default function CreateProposalPage() {
               <textarea
                 value={form.framing}
                 onChange={e => setForm(f => ({ ...f, framing: e.target.value }))}
-                placeholder={PLACEHOLDERS[form.category]}
+                placeholder={FRAMING_PLACEHOLDERS[form.category]}
                 rows={6}
                 style={{
                   width: '100%',
@@ -270,6 +309,7 @@ export default function CreateProposalPage() {
             <div style={{ background: 'var(--surface)', border: '1px solid var(--border-mid)', borderLeft: '3px solid var(--green)', padding: 24, marginBottom: 28 }}>
               {[
                 { key: 'Category', val: CATEGORY_LABEL[form.category] },
+                { key: 'Title', val: form.title },
                 { key: 'Concern', val: form.framing },
                 { key: 'If threshold met', val: 'Sign a collective message' },
                 { key: 'Threshold', val: `${form.thresholdValue} workers`, green: true },

@@ -20,7 +20,9 @@ function ProposalItem({ proposal, isDemo }: { proposal: Proposal; isDemo: boolea
   const isExpired = proposal.status === 'expired'
   const isActive = proposal.status === 'active'
   const pct = proposal.thresholdValue > 0 ? Math.min((proposal.commitmentCount / proposal.thresholdValue) * 100, 100) : 0
-  const framing = (proposal.templateFields as { framing?: string }).framing ?? '—'
+  const fields = proposal.templateFields as { title?: string; framing?: string }
+  const framing = fields.framing ?? '—'
+  const title = fields.title ?? framing.split(' ').slice(0, 6).join(' ')
 
   return (
     <div
@@ -36,7 +38,7 @@ function ProposalItem({ proposal, isDemo }: { proposal: Proposal; isDemo: boolea
         className="framing-text"
         style={{ fontFamily: "'Big Shoulders Display', sans-serif", fontWeight: 700, fontSize: '1.45rem', lineHeight: 1.12, color: 'var(--cream)', marginBottom: 8, transition: 'color 0.15s', textTransform: 'uppercase' }}
       >
-        {framing.split(' ').slice(0, 5).join(' ')}
+        {title}
       </div>
       <div style={{ fontSize: '0.86rem', color: 'var(--cream-dim)', lineHeight: 1.6, maxWidth: 520, marginBottom: 20 }}>
         {framing}
