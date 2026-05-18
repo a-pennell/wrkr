@@ -49,8 +49,8 @@ const SEED = [
 
 async function seedOnce() {
   await prisma.workspace.upsert({
-    where: { id: DEMO_WS_ID },
-    create: { id: DEMO_WS_ID },
+    where: { domainHash: 'demo' },
+    create: { id: DEMO_WS_ID, domainHash: 'demo' },
     update: {},
   })
 
@@ -70,6 +70,7 @@ async function seedOnce() {
         thresholdType: 'count',
         thresholdValue: s.thresholdValue,
         deadline,
+        publishAt: new Date(Date.now() - 86_400_000 * 2),
         status: s.status,
         activatedAt: s.status === 'activated' ? new Date(Date.now() - 86_400_000) : null,
       },
