@@ -108,6 +108,8 @@
 - ⬜ In-app notification UI (threshold reached, proposal expired)
 - ⬜ Mobile browser testing and fixes
 - ⬜ Empty state — workspace with no proposals (partially done, review on real data)
+- ⬜ **Invite landing page** — the page a worker sees when they receive an invite link, before they've verified. Carries the concept (threshold model, anonymity, no-one-acts-alone) and the trust argument. This is the primary "how it works" surface and the onboarding moment for most workers. Not a generic marketing page — contextualised to the invite.
+- ⬜ **First-person empty state** — when a verified worker is the first from their company, show a directed state rather than a dead end: explain what comes next, prompt invite link generation, set expectations on critical mass. Distinct from the generic empty state.
 
 ---
 
