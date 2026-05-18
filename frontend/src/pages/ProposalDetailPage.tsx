@@ -12,33 +12,7 @@ function daysRemaining(deadline: string) {
   return Math.max(0, Math.ceil((new Date(deadline).getTime() - Date.now()) / 86_400_000))
 }
 
-function ProgressBar({ value, max, activated }: { value: number; max: number; activated: boolean }) {
-  const pct = max > 0 ? Math.min((value / max) * 100, 100) : 0
-  return (
-    <div>
-      <div className="h-2 rounded-full overflow-hidden" style={{ background: 'var(--border)' }}>
-        <div
-          className="h-2 rounded-full transition-all duration-700"
-          style={{
-            width: `${pct}%`,
-            background: activated ? 'var(--green-glow)' : 'var(--green)',
-            boxShadow: activated ? '0 0 12px var(--green-glow)' : 'none',
-          }}
-        />
-      </div>
-      <div className="flex items-center justify-between mt-2 text-sm">
-        <span style={{ color: 'var(--cream-dim)' }}>
-          <span style={{ color: 'var(--cream)', fontWeight: 600 }}>{value}</span>
-          {' / '}
-          <span style={{ color: 'var(--cream-dim)' }}>{max} committed</span>
-        </span>
-        <span style={{ color: 'var(--cream-dim)' }}>
-          {Math.round(pct)}%
-        </span>
-      </div>
-    </div>
-  )
-}
+const DISPLAY: React.CSSProperties = { fontFamily: "'Big Shoulders Display', sans-serif" }
 
 export default function ProposalDetailPage() {
   const { id } = useParams<{ id: string }>()
@@ -92,180 +66,198 @@ export default function ProposalDetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--bg)' }}>
-        <p className="text-sm" style={{ color: 'var(--cream-dim)' }}>Loading…</p>
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg)' }}>
+        <p style={{ fontSize: '0.88rem', color: 'var(--cream-dim)' }}>Loading…</p>
       </div>
     )
   }
 
   if (!proposal) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center gap-4" style={{ background: 'var(--bg)' }}>
-        <p className="text-sm" style={{ color: 'var(--cream-dim)' }}>{error || 'Proposal not found.'}</p>
-        <button onClick={() => navigate('/')} className="text-sm" style={{ color: 'var(--green)' }}>
-          Back to workspace
+      <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16, background: 'var(--bg)' }}>
+        <p style={{ fontSize: '0.88rem', color: 'var(--cream-dim)' }}>{error || 'Proposal not found.'}</p>
+        <button onClick={() => navigate('/')} style={{ fontSize: '0.72rem', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--green)', background: 'none', border: 'none', cursor: 'pointer' }}>
+          ← Workspace
         </button>
       </div>
     )
   }
 
+  const framing = (proposal.templateFields as { framing?: string }).framing ?? '—'
   const days = daysRemaining(proposal.deadline)
   const isActivated = proposal.status === 'activated'
   const isExpired = proposal.status === 'expired'
   const isClosed = isActivated || isExpired
+  const pct = proposal.thresholdValue > 0 ? Math.min((proposal.commitmentCount / proposal.thresholdValue) * 100, 100) : 0
 
   return (
-    <div className="min-h-screen" style={{ background: 'var(--bg)' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
       {/* Topbar */}
-      <div
-        className="sticky top-0 z-10 flex items-center h-14 px-7"
-        style={{ background: 'var(--bg)', borderBottom: '1px solid var(--border)' }}
-      >
-        <button
-          onClick={() => navigate('/')}
-          className="text-sm transition-opacity hover:opacity-60"
-          style={{ color: 'var(--cream-dim)' }}
-        >
-          ← Proposals
-        </button>
+      <div style={{ borderBottom: '1px solid var(--border)', background: 'var(--bg)', position: 'sticky', top: 0, zIndex: 10 }}>
+        <div style={{ maxWidth: 720, margin: '0 auto', padding: '22px 28px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <span style={{ ...DISPLAY, fontWeight: 900, fontSize: '1.05rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--cream)' }}>Wrkr</span>
+          <span style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.72rem', fontWeight: 500, color: 'var(--cream-dim)', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+            <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--green)', boxShadow: '0 0 6px var(--green)', flexShrink: 0 }} />
+            Anonymous
+          </span>
+        </div>
       </div>
 
-      <div className="max-w-[720px] mx-auto px-7 py-8">
-        {/* Category + status */}
-        <div className="flex items-center gap-3 mb-5">
-          <span
-            className="text-xs font-semibold tracking-widest uppercase px-2 py-1 rounded"
-            style={{ color: 'var(--green)', background: 'var(--green-faint)' }}
-          >
-            {CATEGORY_LABEL[proposal.category] ?? proposal.category}
-          </span>
-          {isActivated && (
-            <span
-              className="text-xs font-semibold tracking-widest uppercase px-2 py-1 rounded"
-              style={{ color: '#111511', background: 'var(--green-glow)' }}
-            >
-              Threshold reached
-            </span>
-          )}
-          {isExpired && (
-            <span
-              className="text-xs font-semibold tracking-widest uppercase px-2 py-1 rounded"
-              style={{ color: 'var(--cream-dim)', background: 'var(--surface-2)' }}
-            >
-              Expired
-            </span>
-          )}
+      <div style={{ maxWidth: 720, margin: '0 auto', padding: '0 28px' }}>
+        {/* Back link */}
+        <button
+          onClick={() => navigate('/')}
+          style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: '0.72rem', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--cream-dim)', background: 'none', border: 'none', cursor: 'pointer', padding: '24px 0 22px' }}
+        >
+          ← Workspace
+        </button>
+
+        <div style={{ height: 1, background: 'var(--border)', marginBottom: 40 }} />
+
+        {/* Category eyebrow */}
+        <div style={{ fontSize: '0.65rem', fontWeight: 600, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--green)', opacity: 0.85, marginBottom: 14 }}>
+          {CATEGORY_LABEL[proposal.category] ?? proposal.category}
         </div>
 
-        {/* Framing */}
-        <p
-          className="text-base leading-relaxed mb-8"
-          style={{ color: 'var(--cream)' }}
-        >
-          {(proposal.templateFields as { framing?: string }).framing ?? '—'}
+        {/* Framing body */}
+        <p style={{ fontSize: '0.92rem', lineHeight: 1.68, color: 'var(--cream-dim)', maxWidth: 520, marginBottom: 20 }}>
+          {framing}
+        </p>
+        <p style={{ fontSize: '0.92rem', lineHeight: 1.68, color: 'var(--cream-dim)', maxWidth: 520, marginBottom: 20, paddingTop: 18, borderTop: '1px solid var(--border)', fontStyle: 'italic' }}>
+          If this threshold is reached, all committed workers will sign a collective statement.
         </p>
 
-        {/* Sign-if block */}
-        <div
-          className="rounded-xl p-4 mb-6 text-sm"
-          style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
-        >
-          <span className="font-semibold uppercase tracking-widest text-xs" style={{ color: 'var(--cream-dim)' }}>
-            Sign if:{' '}
-          </span>
-          <span style={{ color: 'var(--cream)' }}>
-            {proposal.thresholdValue} workers commit to this
-          </span>
-        </div>
-
-        {/* Progress */}
-        <div className="mb-6">
-          <ProgressBar
-            value={proposal.commitmentCount}
-            max={proposal.thresholdValue}
-            activated={isActivated}
-          />
-        </div>
-
-        {/* Deadline */}
-        {!isClosed && (
-          <p className="text-sm mb-8" style={{ color: 'var(--cream-dim)' }}>
-            {days > 0 ? `${days} day${days !== 1 ? 's' : ''} remaining` : 'Closing today'}
-          </p>
-        )}
-
-        {/* Activated state */}
-        {isActivated && (
-          <div
-            className="rounded-2xl p-6 mb-6 text-center"
-            style={{ background: 'var(--green-faint)', border: '1px solid var(--green-dim)' }}
-          >
-            <p className="text-2xl mb-2" style={{ fontFamily: "'Big Shoulders Display', sans-serif", fontWeight: 900, color: 'var(--green-glow)' }}>
-              Threshold reached
-            </p>
-            <p className="text-sm" style={{ color: 'var(--cream-dim)' }}>
-              {proposal.commitmentCount} workers committed. A collective statement has been generated.
-            </p>
+        {/* Threshold block */}
+        <div style={{ background: 'var(--surface)', border: '1px solid var(--border-mid)', borderLeft: `3px solid ${isActivated ? 'var(--green-glow)' : isExpired ? 'var(--cream-faint)' : 'var(--green)'}`, padding: '28px 28px 24px', margin: '32px 0' }}>
+          <div style={{ fontSize: '0.63rem', fontWeight: 600, letterSpacing: '0.16em', textTransform: 'uppercase', color: isExpired ? 'var(--cream-faint)' : 'var(--green)', opacity: 0.75, marginBottom: 14 }}>
+            {isActivated ? 'Threshold reached' : isExpired ? 'Final count' : 'Threshold progress'}
           </div>
-        )}
-
-        {/* Expired state */}
-        {isExpired && (
-          <div
-            className="rounded-2xl p-6 mb-6 text-center"
-            style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
-          >
-            <p className="text-sm" style={{ color: 'var(--cream-dim)' }}>
-              This proposal closed without reaching its threshold.
-              {' '}{proposal.commitmentCount} of {proposal.thresholdValue} workers committed.
-            </p>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 18 }}>
+            <span style={{ ...DISPLAY, fontWeight: 900, fontSize: '4.8rem', lineHeight: 1, color: isExpired ? 'var(--cream-dim)' : 'var(--green)', textShadow: isExpired ? 'none' : '0 0 32px rgba(82,183,136,0.3)' }}>
+              {proposal.commitmentCount}
+            </span>
+            <span style={{ ...DISPLAY, fontWeight: 500, fontSize: '2.2rem', color: 'var(--border-mid)' }}>/</span>
+            <span style={{ ...DISPLAY, fontWeight: 700, fontSize: '2.6rem', color: 'var(--cream-dim)' }}>{proposal.thresholdValue}</span>
+            <span style={{ fontSize: '0.8rem', color: 'var(--cream-dim)', marginLeft: 6, alignSelf: 'flex-end', paddingBottom: 8 }}>workers committed</span>
           </div>
-        )}
+          <div style={{ height: 4, background: 'var(--border-mid)', marginBottom: 12 }}>
+            <div style={{
+              height: '100%',
+              width: `${pct}%`,
+              background: isExpired ? 'var(--cream-faint)' : isActivated ? 'var(--green-glow)' : 'var(--green)',
+              boxShadow: isActivated ? '0 0 16px rgba(82,183,136,0.7)' : isExpired ? 'none' : '0 0 12px rgba(82,183,136,0.5)',
+              transition: 'width 1s cubic-bezier(0.16,1,0.3,1)',
+            }} />
+          </div>
+          <div style={{ fontSize: '0.75rem', color: 'var(--cream-dim)' }}>
+            {isActivated && `Activated · ${proposal.commitmentCount} workers committed`}
+            {isExpired && `Closed · ${proposal.thresholdValue - proposal.commitmentCount} workers short of threshold`}
+            {!isClosed && `${proposal.thresholdValue - proposal.commitmentCount} workers needed · ${days > 0 ? `Closes in ${days} day${days !== 1 ? 's' : ''}` : 'Closing today'}`}
+          </div>
+        </div>
 
         {error && (
-          <p className="text-sm mb-4 text-center" style={{ color: 'var(--cream-dim)' }}>{error}</p>
+          <p style={{ fontSize: '0.8rem', color: 'var(--cream-dim)', marginBottom: 16, textAlign: 'center' }}>{error}</p>
         )}
 
-        {/* Commit / withdraw actions */}
+        {/* Actions */}
         {!isClosed && (
           <>
+            <div style={{ height: 1, background: 'var(--border)', marginBottom: 24 }} />
+            <p style={{ fontSize: '0.78rem', color: 'var(--cream-dim)', lineHeight: 1.6, marginBottom: 18 }}>
+              If {proposal.thresholdValue} workers commit, all commitments activate simultaneously — no one acts alone.<br />
+              Your identity is never revealed, before or after threshold.
+            </p>
+
             {proposal.userCommitted ? (
-              <div className="flex flex-col items-center gap-4">
-                <div
-                  className="w-full rounded-2xl p-5 flex items-center gap-4"
-                  style={{ background: 'var(--green-faint)', border: '1px solid var(--green-dim)' }}
-                >
-                  <span className="text-2xl">✓</span>
-                  <div>
-                    <p className="font-semibold text-sm" style={{ color: 'var(--green)' }}>
-                      You've committed to this
-                    </p>
-                    <p className="text-xs mt-0.5" style={{ color: 'var(--cream-dim)' }}>
-                      Once the threshold is reached, your commitment is locked.
-                    </p>
+              <>
+                <div style={{ background: 'var(--green-faint)', border: '1px solid var(--border-mid)', borderLeft: '3px solid var(--green)', padding: '20px 22px', marginBottom: 14 }}>
+                  <div style={{ fontSize: '0.65rem', fontWeight: 600, letterSpacing: '0.16em', textTransform: 'uppercase', color: 'var(--green)', marginBottom: 6 }}>
+                    ✓ You've committed
+                  </div>
+                  <div style={{ fontSize: '0.82rem', color: 'var(--cream-dim)', lineHeight: 1.55 }}>
+                    Your commitment is recorded anonymously. If {proposal.thresholdValue} workers commit, you'll all be notified simultaneously — no one acts alone.
                   </div>
                 </div>
                 <button
                   onClick={handleWithdraw}
                   disabled={acting}
-                  className="text-sm transition-opacity hover:opacity-60 disabled:opacity-30"
-                  style={{ color: 'var(--cream-dim)' }}
+                  style={{ display: 'block', textAlign: 'center', width: '100%', fontSize: '0.72rem', color: 'var(--cream-faint)', background: 'none', border: 'none', cursor: acting ? 'not-allowed' : 'pointer', padding: '10px 0', textDecoration: 'underline', textUnderlineOffset: 3, opacity: acting ? 0.5 : 1 }}
                 >
                   {acting ? 'Withdrawing…' : 'Withdraw my commitment'}
                 </button>
-              </div>
+              </>
             ) : (
               <button
                 onClick={handleCommit}
                 disabled={acting}
-                className="w-full py-4 rounded-2xl font-semibold text-sm transition-all disabled:opacity-40"
-                style={{ background: 'var(--green)', color: '#111511' }}
+                style={{
+                  width: '100%',
+                  background: 'var(--green)',
+                  color: 'var(--bg)',
+                  border: 'none',
+                  padding: '18px 24px',
+                  fontFamily: "'Big Shoulders Display', sans-serif",
+                  fontWeight: 700,
+                  fontSize: '1.15rem',
+                  letterSpacing: '0.08em',
+                  textTransform: 'uppercase',
+                  cursor: acting ? 'not-allowed' : 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  opacity: acting ? 0.6 : 1,
+                  marginBottom: 14,
+                  transition: 'background 0.15s',
+                }}
               >
-                {acting ? 'Committing…' : 'I commit to this'}
+                <span>{acting ? 'Committing…' : `Commit if ${proposal.thresholdValue} agree`}</span>
+                {!acting && <span style={{ fontSize: '1.3rem', fontWeight: 400 }}>→</span>}
               </button>
             )}
+            <p style={{ fontSize: '0.7rem', color: 'var(--cream-faint)', fontStyle: 'italic', textAlign: 'center' }}>
+              You can withdraw any time before the threshold is reached.
+            </p>
           </>
         )}
+
+        {isActivated && (
+          <>
+            <div style={{ height: 1, background: 'var(--border)', marginBottom: 24 }} />
+            <div style={{ background: 'var(--surface)', border: '1px solid var(--border-mid)', borderLeft: '3px solid var(--green)', padding: '22px 22px 18px', marginBottom: 14 }}>
+              <div style={{ fontSize: '0.63rem', fontWeight: 600, letterSpacing: '0.16em', textTransform: 'uppercase', color: 'var(--green)', marginBottom: 8 }}>
+                ✓ Threshold reached
+              </div>
+              <div style={{ fontSize: '0.82rem', color: 'var(--cream-dim)', lineHeight: 1.55 }}>
+                {proposal.commitmentCount} workers committed and the collective statement was generated.
+              </div>
+            </div>
+          </>
+        )}
+
+        {isExpired && (
+          <>
+            <div style={{ height: 1, background: 'var(--border)', marginBottom: 24 }} />
+            <div style={{ background: 'var(--surface)', border: '1px solid var(--border-mid)', padding: '20px 22px', marginBottom: 14 }}>
+              <div style={{ fontSize: '0.63rem', fontWeight: 600, letterSpacing: '0.16em', textTransform: 'uppercase', color: 'var(--cream-faint)', marginBottom: 8 }}>
+                What now
+              </div>
+              <div style={{ fontSize: '0.82rem', color: 'var(--cream-dim)', lineHeight: 1.55, marginBottom: 16 }}>
+                This proposal didn't reach its threshold — no action was taken and no one's commitment was exposed. The concern is still valid. Anyone can start a new proposal based on this one.
+              </div>
+              <button
+                onClick={() => navigate('/create')}
+                style={{ width: '100%', background: 'transparent', color: 'var(--cream-dim)', border: '1px solid var(--border-mid)', padding: '15px 22px', fontFamily: "'Big Shoulders Display', sans-serif", fontWeight: 700, fontSize: '0.95rem', letterSpacing: '0.08em', textTransform: 'uppercase', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
+              >
+                <span>Start a similar proposal</span><span>→</span>
+              </button>
+            </div>
+          </>
+        )}
+
+        <div style={{ marginTop: 28, fontSize: '0.75rem', color: 'var(--cream-faint)', paddingTop: 24, borderTop: '1px solid var(--border)', marginBottom: 48 }}>
+          {isClosed ? 'Proposal closed' : 'Proposal closes'} &nbsp;·&nbsp; Created anonymously
+        </div>
       </div>
     </div>
   )
