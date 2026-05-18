@@ -43,7 +43,7 @@ function ProposalItem({ proposal, isDemo }: { proposal: Proposal; isDemo: boolea
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
         <div style={{ flex: 1, height: 3, background: 'var(--border-mid)' }}>
-          <div style={{ height: '100%', width: `${pct}%`, background: isActivated ? 'var(--green-glow)' : 'var(--green)', boxShadow: isActivated ? '0 0 12px rgba(82,183,136,0.6)' : '0 0 8px rgba(82,183,136,0.4)', transition: 'width 0.7s' }} />
+          <div style={{ height: '100%', width: `${pct}%`, background: isActivated ? 'var(--gold-glow)' : 'var(--green)', boxShadow: isActivated ? '0 0 12px rgba(224,184,74,0.7)' : '0 0 8px rgba(82,183,136,0.4)', transition: 'width 0.7s' }} />
         </div>
         <div style={{ fontFamily: "'Big Shoulders Display', sans-serif", fontWeight: 700, fontSize: '0.82rem', color: 'var(--cream)', whiteSpace: 'nowrap', minWidth: 68, textAlign: 'right' }}>
           {proposal.commitmentCount} <span style={{ color: 'var(--cream-dim)', fontWeight: 500 }}>/ {proposal.thresholdValue}</span>

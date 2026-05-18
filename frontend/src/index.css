@@ -13,6 +13,9 @@
   --green-dim:   #3D8A65;
   --green-glow:  #74C69D;
   --green-faint: #1A3326;
+  --gold:        #C9A227;
+  --gold-glow:   #E0B84A;
+  --gold-faint:  #2A2210;
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }

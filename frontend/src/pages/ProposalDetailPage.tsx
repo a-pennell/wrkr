@@ -130,12 +130,12 @@ export default function ProposalDetailPage() {
         </p>
 
         {/* Threshold block */}
-        <div style={{ background: 'var(--surface)', border: '1px solid var(--border-mid)', borderLeft: `3px solid ${isActivated ? 'var(--green-glow)' : isExpired ? 'var(--cream-faint)' : 'var(--green)'}`, padding: '28px 28px 24px', margin: '32px 0' }}>
-          <div style={{ fontSize: '0.63rem', fontWeight: 600, letterSpacing: '0.16em', textTransform: 'uppercase', color: isExpired ? 'var(--cream-faint)' : 'var(--green)', opacity: 0.75, marginBottom: 14 }}>
+        <div style={{ background: isActivated ? 'var(--gold-faint)' : 'var(--surface)', border: `1px solid ${isActivated ? 'var(--gold)' : 'var(--border-mid)'}`, borderLeft: `3px solid ${isActivated ? 'var(--gold-glow)' : isExpired ? 'var(--cream-faint)' : 'var(--green)'}`, padding: '28px 28px 24px', margin: '32px 0' }}>
+          <div style={{ fontSize: '0.63rem', fontWeight: 600, letterSpacing: '0.16em', textTransform: 'uppercase', color: isActivated ? 'var(--gold-glow)' : isExpired ? 'var(--cream-faint)' : 'var(--green)', opacity: 0.9, marginBottom: 14 }}>
             {isActivated ? 'Threshold reached' : isExpired ? 'Final count' : 'Threshold progress'}
           </div>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 18 }}>
-            <span style={{ ...DISPLAY, fontWeight: 900, fontSize: '4.8rem', lineHeight: 1, color: isExpired ? 'var(--cream-dim)' : 'var(--green)', textShadow: isExpired ? 'none' : '0 0 32px rgba(82,183,136,0.3)' }}>
+            <span style={{ ...DISPLAY, fontWeight: 900, fontSize: '4.8rem', lineHeight: 1, color: isActivated ? 'var(--gold-glow)' : isExpired ? 'var(--cream-dim)' : 'var(--green)', textShadow: isActivated ? '0 0 32px rgba(201,162,39,0.4)' : isExpired ? 'none' : '0 0 32px rgba(82,183,136,0.3)' }}>
               {proposal.commitmentCount}
             </span>
             <span style={{ ...DISPLAY, fontWeight: 500, fontSize: '2.2rem', color: 'var(--border-mid)' }}>/</span>
@@ -146,12 +146,12 @@ export default function ProposalDetailPage() {
             <div style={{
               height: '100%',
               width: `${pct}%`,
-              background: isExpired ? 'var(--cream-faint)' : isActivated ? 'var(--green-glow)' : 'var(--green)',
-              boxShadow: isActivated ? '0 0 16px rgba(82,183,136,0.7)' : isExpired ? 'none' : '0 0 12px rgba(82,183,136,0.5)',
+              background: isExpired ? 'var(--cream-faint)' : isActivated ? 'var(--gold-glow)' : 'var(--green)',
+              boxShadow: isActivated ? '0 0 16px rgba(224,184,74,0.8)' : isExpired ? 'none' : '0 0 12px rgba(82,183,136,0.5)',
               transition: 'width 1s cubic-bezier(0.16,1,0.3,1)',
             }} />
           </div>
-          <div style={{ fontSize: '0.75rem', color: 'var(--cream-dim)' }}>
+          <div style={{ fontSize: '0.75rem', color: isActivated ? 'var(--gold)' : 'var(--cream-dim)' }}>
             {isActivated && `Activated · ${proposal.commitmentCount} workers committed`}
             {isExpired && `Closed · ${proposal.thresholdValue - proposal.commitmentCount} workers short of threshold`}
             {!isClosed && `${proposal.thresholdValue - proposal.commitmentCount} workers needed · ${days > 0 ? `Closes in ${days} day${days !== 1 ? 's' : ''}` : 'Closing today'}`}
@@ -226,8 +226,8 @@ export default function ProposalDetailPage() {
         {isActivated && (
           <>
             <div style={{ height: 1, background: 'var(--border)', marginBottom: 24 }} />
-            <div style={{ background: 'var(--surface)', border: '1px solid var(--border-mid)', borderLeft: '3px solid var(--green)', padding: '22px 22px 18px', marginBottom: 14 }}>
-              <div style={{ fontSize: '0.63rem', fontWeight: 600, letterSpacing: '0.16em', textTransform: 'uppercase', color: 'var(--green)', marginBottom: 8 }}>
+            <div style={{ background: 'var(--gold-faint)', border: '1px solid var(--gold)', borderLeft: '3px solid var(--gold-glow)', padding: '22px 22px 18px', marginBottom: 14 }}>
+              <div style={{ fontSize: '0.63rem', fontWeight: 600, letterSpacing: '0.16em', textTransform: 'uppercase', color: 'var(--gold-glow)', marginBottom: 8 }}>
                 ✓ Threshold reached
               </div>
               <div style={{ fontSize: '0.82rem', color: 'var(--cream-dim)', lineHeight: 1.55 }}>
