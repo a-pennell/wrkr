@@ -1,0 +1,1620 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wrkr — Design Prototype</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@500;700;900&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:          #111511;
+      --surface:     #181E18;
+      --surface-2:   #1F2820;
+      --border:      #263029;
+      --border-mid:  #2E3C33;
+      --cream:       #E8E3D8;
+      --cream-dim:   #9EA89E;
+      --cream-faint: #3D4A3F;
+      --green:       #52B788;
+      --green-dim:   #3D8A65;
+      --green-glow:  #74C69D;
+      --green-faint: #1A3326;
+      --font-display:'Big Shoulders Display', sans-serif;
+      --font-body:   'Instrument Sans', sans-serif;
+    }
+
+    html, body {
+      background: var(--bg);
+      color: var(--cream);
+      font-family: var(--font-body);
+      font-size: 16px;
+      line-height: 1.5;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .screen { display: none; min-height: 100vh; flex-direction: column; }
+    .screen.active { display: flex; }
+
+    .container {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 0 28px;
+      width: 100%;
+    }
+
+    /* ── Topbar ─────────────────────────────────── */
+    .topbar {
+      padding: 22px 0 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+    }
+    .topbar-wordmark {
+      font-family: var(--font-display);
+      font-weight: 900;
+      font-size: 1.05rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--cream);
+    }
+    .topbar-status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.72rem;
+      font-weight: 500;
+      color: var(--cream-dim);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+    .anon-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 6px var(--green);
+    }
+
+    /* ── Step progress ──────────────────────────── */
+    .step-header {
+      padding: 20px 0 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 6px;
+    }
+    .step-label {
+      font-size: 0.65rem;
+      font-weight: 600;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--cream-faint);
+    }
+    .step-back {
+      font-size: 0.65rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--cream-dim);
+      background: none;
+      border: none;
+      cursor: pointer;
+      transition: color 0.15s;
+    }
+    .step-back:hover { color: var(--green); }
+    .step-bar-track {
+      height: 2px;
+      background: var(--border);
+      margin-bottom: 40px;
+    }
+    .step-bar-fill {
+      height: 100%;
+      background: var(--green);
+      box-shadow: 0 0 8px rgba(82,183,136,0.4);
+      transition: width 0.4s cubic-bezier(0.16,1,0.3,1);
+    }
+
+    /* ── Step heading ───────────────────────────── */
+    .step-heading {
+      font-family: var(--font-display);
+      font-weight: 900;
+      font-size: clamp(2rem, 6vw, 3rem);
+      line-height: 1.0;
+      text-transform: uppercase;
+      color: var(--cream);
+      margin-bottom: 8px;
+    }
+    .step-sub {
+      font-size: 0.85rem;
+      color: var(--cream-dim);
+      margin-bottom: 36px;
+      line-height: 1.5;
+    }
+
+    /* ── Category cards ─────────────────────────── */
+    .category-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 40px;
+    }
+    .category-card {
+      background: var(--surface);
+      border: 1px solid var(--border-mid);
+      border-left: 3px solid transparent;
+      padding: 22px 22px 20px;
+      cursor: pointer;
+      transition: all 0.18s;
+    }
+    .category-card:hover {
+      border-color: var(--border-mid);
+      border-left-color: var(--green-dim);
+      background: var(--surface-2);
+    }
+    .category-card.selected {
+      border-color: var(--border-mid);
+      border-left-color: var(--green);
+      background: var(--green-faint);
+    }
+    .category-card-name {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 1.4rem;
+      text-transform: uppercase;
+      color: var(--cream);
+      margin-bottom: 4px;
+      transition: color 0.15s;
+    }
+    .category-card.selected .category-card-name { color: var(--green-glow); }
+    .category-card-desc {
+      font-size: 0.82rem;
+      color: var(--cream-dim);
+    }
+
+    /* ── Primary action button ──────────────────── */
+    .btn-primary {
+      width: 100%;
+      background: var(--green);
+      color: var(--bg);
+      border: none;
+      padding: 18px 24px;
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 1.1rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: background 0.15s, box-shadow 0.15s;
+      margin-bottom: 40px;
+    }
+    .btn-primary:hover {
+      background: var(--green-glow);
+      box-shadow: 0 0 24px rgba(82,183,136,0.3);
+    }
+    .btn-primary:disabled {
+      background: var(--cream-faint);
+      color: var(--bg);
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    /* ── Framing fields ─────────────────────────── */
+    .field-block { margin-bottom: 32px; }
+    .field-label {
+      font-size: 0.63rem;
+      font-weight: 600;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--green);
+      opacity: 0.8;
+      margin-bottom: 10px;
+      display: block;
+    }
+    .field-context {
+      font-size: 0.78rem;
+      color: var(--cream-dim);
+      margin-bottom: 10px;
+      font-style: italic;
+    }
+    .field-textarea {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border-mid);
+      color: var(--cream);
+      font-family: var(--font-body);
+      font-size: 0.9rem;
+      line-height: 1.6;
+      padding: 16px;
+      resize: none;
+      outline: none;
+      transition: border-color 0.15s;
+      min-height: 100px;
+    }
+    .field-textarea::placeholder { color: var(--cream-faint); }
+    .field-textarea:focus { border-color: var(--green); }
+
+    .char-counter {
+      text-align: right;
+      font-size: 0.68rem;
+      color: var(--cream-faint);
+      margin-top: 6px;
+    }
+    .char-counter.warn { color: #E07B39; }
+
+    .option-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .option-pill {
+      background: var(--surface);
+      border: 1px solid var(--border-mid);
+      color: var(--cream-dim);
+      font-family: var(--font-body);
+      font-size: 0.8rem;
+      font-weight: 500;
+      padding: 8px 16px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .option-pill:hover {
+      border-color: var(--green-dim);
+      color: var(--cream);
+    }
+    .option-pill.selected {
+      background: var(--green-faint);
+      border-color: var(--green);
+      color: var(--green-glow);
+    }
+
+    /* ── Threshold controls ─────────────────────── */
+    .threshold-display {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+    .threshold-input-wrap {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      background: var(--surface);
+      border: 1px solid var(--border-mid);
+    }
+    .threshold-adj {
+      width: 44px; height: 56px;
+      background: none;
+      border: none;
+      color: var(--cream-dim);
+      font-size: 1.2rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: color 0.15s, background 0.15s;
+    }
+    .threshold-adj:hover { color: var(--green); background: var(--surface-2); }
+    .threshold-val {
+      font-family: var(--font-display);
+      font-weight: 900;
+      font-size: 2.4rem;
+      color: var(--green);
+      width: 60px;
+      text-align: center;
+      padding: 0 4px;
+      text-shadow: 0 0 20px rgba(82,183,136,0.3);
+    }
+    .threshold-of {
+      font-family: var(--font-display);
+      font-weight: 500;
+      font-size: 1.1rem;
+      color: var(--cream-faint);
+    }
+    .threshold-total {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 1.5rem;
+      color: var(--cream-dim);
+    }
+    .threshold-unit-label {
+      font-size: 0.82rem;
+      color: var(--cream-dim);
+      padding-bottom: 2px;
+    }
+    .threshold-preview {
+      font-size: 0.8rem;
+      color: var(--cream-dim);
+      margin-bottom: 28px;
+      font-style: italic;
+    }
+    .threshold-preview strong { color: var(--green); font-style: normal; }
+
+    .deadline-pills {
+      display: flex;
+      gap: 10px;
+    }
+    .deadline-pill {
+      flex: 1;
+      background: var(--surface);
+      border: 1px solid var(--border-mid);
+      color: var(--cream-dim);
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 1rem;
+      text-transform: uppercase;
+      padding: 14px 12px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .deadline-pill:hover { border-color: var(--green-dim); color: var(--cream); }
+    .deadline-pill.selected {
+      background: var(--green-faint);
+      border-color: var(--green);
+      color: var(--green-glow);
+    }
+
+    /* ── Review screen ──────────────────────────── */
+    .review-card {
+      background: var(--surface);
+      border: 1px solid var(--border-mid);
+      border-left: 3px solid var(--green);
+      padding: 24px;
+      margin-bottom: 28px;
+    }
+    .review-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      padding: 11px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .review-row:last-child { border-bottom: none; }
+    .review-key {
+      font-size: 0.65rem;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--cream-faint);
+    }
+    .review-val {
+      font-size: 0.86rem;
+      color: var(--cream);
+      font-weight: 500;
+      text-align: right;
+      max-width: 340px;
+    }
+    .review-val.green { color: var(--green); }
+
+    .anon-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--cream-dim);
+      margin-bottom: 20px;
+    }
+    .anon-badge::before {
+      content: '';
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 5px var(--green);
+    }
+
+    /* ── Submitted state ────────────────────────── */
+    .submitted-hero {
+      padding: 64px 0 48px;
+      border-bottom: 1px solid var(--border);
+    }
+    .submitted-check {
+      font-size: 0.65rem;
+      font-weight: 600;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--green);
+      margin-bottom: 16px;
+    }
+    .submitted-heading {
+      font-family: var(--font-display);
+      font-weight: 900;
+      font-size: clamp(2.8rem, 8vw, 4.4rem);
+      line-height: 0.96;
+      text-transform: uppercase;
+      color: var(--cream);
+      margin-bottom: 20px;
+    }
+    .submitted-body {
+      font-size: 0.88rem;
+      color: var(--cream-dim);
+      line-height: 1.65;
+      max-width: 460px;
+    }
+    .submitted-detail {
+      padding: 32px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .submitted-detail-label {
+      font-size: 0.63rem;
+      font-weight: 600;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--cream-faint);
+      margin-bottom: 8px;
+    }
+    .submitted-detail-val {
+      font-size: 0.88rem;
+      color: var(--cream-dim);
+    }
+    .submitted-actions {
+      padding: 28px 0 40px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .btn-ghost {
+      width: 100%;
+      background: transparent;
+      color: var(--cream-dim);
+      border: 1px solid var(--border-mid);
+      padding: 16px 24px;
+      font-family: var(--font-body);
+      font-size: 0.86rem;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      cursor: pointer;
+      transition: all 0.15s;
+      text-align: left;
+    }
+    .btn-ghost:hover { border-color: var(--cream-dim); color: var(--cream); }
+
+    /* ── Empty state ────────────────────────────── */
+    .empty-hero {
+      padding: 48px 0 40px;
+      border-bottom: 1px solid var(--border);
+    }
+    .empty-workspace-label {
+      font-size: 0.65rem;
+      font-weight: 600;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--green);
+      margin-bottom: 12px;
+    }
+    .empty-workspace-name {
+      font-family: var(--font-display);
+      font-weight: 900;
+      font-size: clamp(3.2rem, 9vw, 5.2rem);
+      line-height: 0.92;
+      text-transform: uppercase;
+      color: var(--cream);
+    }
+    .empty-workspace-meta {
+      margin-top: 20px;
+      font-size: 0.82rem;
+      color: var(--cream-dim);
+    }
+    .empty-workspace-meta strong { color: var(--cream); font-weight: 600; }
+
+    .empty-body {
+      padding: 56px 0 0;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    .empty-zero {
+      font-family: var(--font-display);
+      font-weight: 900;
+      font-size: clamp(6rem, 20vw, 10rem);
+      line-height: 1;
+      color: var(--surface-2);
+      user-select: none;
+      margin-bottom: 4px;
+    }
+    .empty-label {
+      font-size: 0.65rem;
+      font-weight: 600;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--cream-faint);
+      margin-bottom: 16px;
+    }
+    .empty-message {
+      font-size: 1rem;
+      color: var(--cream-dim);
+      line-height: 1.65;
+      max-width: 400px;
+      margin-bottom: 40px;
+    }
+    .empty-actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      padding-bottom: 48px;
+    }
+    .btn-primary-sm {
+      background: var(--green);
+      color: var(--bg);
+      border: none;
+      padding: 15px 24px;
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 0.95rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background 0.15s, box-shadow 0.15s;
+      white-space: nowrap;
+    }
+    .btn-primary-sm:hover {
+      background: var(--green-glow);
+      box-shadow: 0 0 20px rgba(82,183,136,0.25);
+    }
+    .btn-ghost-sm {
+      background: transparent;
+      color: var(--cream-dim);
+      border: 1px solid var(--border-mid);
+      padding: 15px 24px;
+      font-family: var(--font-body);
+      font-size: 0.86rem;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      cursor: pointer;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+    .btn-ghost-sm:hover { border-color: var(--cream-dim); color: var(--cream); }
+
+    /* ── Existing screens (home, detail, activation) ── */
+    .workspace-hero { padding: 48px 0 36px; border-bottom: 1px solid var(--border); }
+    .workspace-label { font-size:.65rem; font-weight:600; letter-spacing:.16em; text-transform:uppercase; color:var(--green); margin-bottom:12px; }
+    .workspace-name { font-family:var(--font-display); font-weight:900; font-size:clamp(3.2rem,9vw,5.2rem); line-height:.92; text-transform:uppercase; color:var(--cream); }
+    .workspace-meta { margin-top:20px; font-size:.82rem; color:var(--cream-dim); }
+    .workspace-meta strong { color:var(--cream); font-weight:600; }
+    .list-header { padding:22px 0 0; display:flex; align-items:baseline; justify-content:space-between; }
+    .list-title { font-size:.65rem; font-weight:600; letter-spacing:.16em; text-transform:uppercase; color:var(--cream-faint); }
+    .start-btn { font-family:var(--font-body); font-size:.72rem; font-weight:600; letter-spacing:.06em; text-transform:uppercase; color:var(--green); background:none; border:none; cursor:pointer; padding:0; transition:color .15s; }
+    .start-btn:hover { color:var(--green-glow); }
+    .proposal-list { margin-top:0; }
+    .proposal-item { border-top:1px solid var(--border); padding:28px 0; cursor:pointer; }
+    .proposal-item:last-child { border-bottom:1px solid var(--border); }
+    .proposal-item:hover .proposal-framing { color:var(--green-glow); }
+    .proposal-category { font-size:.63rem; font-weight:600; letter-spacing:.18em; text-transform:uppercase; color:var(--green); opacity:.8; margin-bottom:7px; }
+    .proposal-framing { font-family:var(--font-display); font-weight:700; font-size:1.45rem; line-height:1.12; color:var(--cream); margin-bottom:8px; transition:color .15s; }
+    .proposal-summary { font-size:.86rem; color:var(--cream-dim); line-height:1.6; max-width:520px; margin-bottom:20px; }
+    .progress-row { display:flex; align-items:center; gap:14px; }
+    .progress-bar-track { flex:1; height:3px; background:var(--border-mid); }
+    .progress-bar-fill { height:100%; background:var(--green); box-shadow:0 0 8px rgba(82,183,136,.4); }
+    .progress-fraction { font-family:var(--font-display); font-weight:700; font-size:.82rem; color:var(--cream); white-space:nowrap; min-width:68px; text-align:right; }
+    .progress-fraction span { color:var(--cream-dim); font-weight:500; }
+    .proposal-deadline { font-size:.7rem; color:var(--cream-faint); margin-top:10px; }
+    .bottom-bar { padding:28px 0 40px; border-top:1px solid var(--border); margin-top:8px; }
+    .bottom-note { font-size:.72rem; color:var(--cream-faint); font-style:italic; }
+    .back-link { display:inline-flex; align-items:center; gap:6px; font-size:.72rem; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:var(--cream-dim); background:none; border:none; cursor:pointer; padding:24px 0 22px; transition:color .15s; }
+    .back-link:hover { color:var(--green); }
+    .detail-divider { height:1px; background:var(--border); margin-bottom:40px; }
+    .detail-category { font-size:.65rem; font-weight:600; letter-spacing:.18em; text-transform:uppercase; color:var(--green); margin-bottom:14px; opacity:.85; }
+    .detail-heading { font-family:var(--font-display); font-weight:900; font-size:clamp(2.4rem,6vw,3.8rem); line-height:1.0; text-transform:uppercase; color:var(--cream); margin-bottom:24px; max-width:560px; }
+    .detail-body { font-size:.92rem; line-height:1.68; color:var(--cream-dim); max-width:520px; margin-bottom:20px; }
+    .detail-body+.detail-body { padding-top:18px; border-top:1px solid var(--border); font-style:italic; }
+    .threshold-block { background:var(--surface); border:1px solid var(--border-mid); border-left:3px solid var(--green); padding:28px 28px 24px; margin:32px 0; }
+    .threshold-label { font-size:.63rem; font-weight:600; letter-spacing:.16em; text-transform:uppercase; color:var(--green); opacity:.75; margin-bottom:14px; }
+    .threshold-numbers { display:flex; align-items:baseline; gap:6px; margin-bottom:18px; }
+    .threshold-current { font-family:var(--font-display); font-weight:900; font-size:4.8rem; line-height:1; color:var(--green); text-shadow:0 0 32px rgba(82,183,136,.3); }
+    .threshold-sep { font-family:var(--font-display); font-weight:500; font-size:2.2rem; color:var(--border-mid); }
+    .threshold-needed { font-family:var(--font-display); font-weight:700; font-size:2.6rem; color:var(--cream-dim); }
+    .threshold-unit { font-size:.8rem; color:var(--cream-dim); margin-left:6px; align-self:flex-end; padding-bottom:8px; }
+    .threshold-bar-track { height:4px; background:var(--border-mid); margin-bottom:12px; }
+    .threshold-bar-fill { height:100%; background:var(--green); box-shadow:0 0 12px rgba(82,183,136,.5); width:0%; transition:width 1s cubic-bezier(0.16,1,0.3,1); }
+    .threshold-sub { font-size:.75rem; color:var(--cream-dim); }
+    .action-divider { height:1px; background:var(--border); margin-bottom:24px; }
+    .action-label { font-size:.78rem; color:var(--cream-dim); line-height:1.6; margin-bottom:18px; }
+    .commit-btn { width:100%; background:var(--green); color:var(--bg); border:none; padding:18px 24px; font-family:var(--font-display); font-weight:700; font-size:1.15rem; letter-spacing:.08em; text-transform:uppercase; cursor:pointer; display:flex; align-items:center; justify-content:space-between; transition:background .15s,box-shadow .15s; margin-bottom:14px; }
+    .commit-btn:hover { background:var(--green-glow); box-shadow:0 0 24px rgba(82,183,136,.35); }
+    .commit-btn-arrow { font-size:1.3rem; font-weight:400; }
+    .commit-note { font-size:.7rem; color:var(--cream-faint); font-style:italic; text-align:center; }
+    .detail-deadline { margin-top:28px; font-size:.75rem; color:var(--cream-faint); padding-top:24px; border-top:1px solid var(--border); }
+    #screen-activation { background:var(--bg); }
+    .activation-topbar { padding:22px 0 20px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--border); }
+    .activation-wordmark { font-family:var(--font-display); font-weight:900; font-size:1.05rem; letter-spacing:.1em; text-transform:uppercase; color:var(--cream); }
+    .activation-status { display:flex; align-items:center; gap:8px; font-size:.72rem; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:var(--green); }
+    .pulse-dot { width:7px; height:7px; border-radius:50%; background:var(--green); animation:pulse 1.8s ease-in-out infinite; }
+    @keyframes pulse { 0%,100%{box-shadow:0 0 4px rgba(82,183,136,.4)} 50%{box-shadow:0 0 14px rgba(82,183,136,.9)} }
+    .activation-hero { padding:56px 0 48px; }
+    .activation-eyebrow { font-size:.65rem; font-weight:600; letter-spacing:.18em; text-transform:uppercase; color:var(--green); opacity:.75; margin-bottom:20px; }
+    .activation-count { font-family:var(--font-display); font-weight:900; font-size:clamp(6rem,18vw,10rem); line-height:.85; color:var(--cream); text-shadow:0 0 80px rgba(82,183,136,.2); letter-spacing:-.02em; }
+    .activation-count-label { font-family:var(--font-display); font-weight:700; font-size:clamp(1.6rem,4.5vw,2.6rem); line-height:1.1; color:var(--green); text-transform:uppercase; margin-top:6px; }
+    .activation-rule { height:1px; background:var(--border); margin:40px 0 32px; }
+    .activation-statement-label { font-size:.63rem; font-weight:600; letter-spacing:.18em; text-transform:uppercase; color:var(--green); opacity:.7; margin-bottom:14px; }
+    .activation-statement { background:var(--surface); border:1px solid var(--border-mid); border-left:3px solid var(--green); padding:24px 24px 20px; margin-bottom:28px; }
+    .statement-heading { font-family:var(--font-display); font-weight:700; font-size:1.1rem; text-transform:uppercase; color:var(--cream); margin-bottom:12px; }
+    .statement-body { font-size:.86rem; color:var(--cream-dim); line-height:1.65; margin-bottom:18px; }
+    .statement-attestation { font-size:.7rem; color:var(--green); font-weight:500; letter-spacing:.03em; opacity:.85; }
+    .activation-actions { display:flex; gap:12px; }
+    .btn-primary-green { flex:1; background:var(--green); color:var(--bg); border:none; padding:16px 20px; font-family:var(--font-display); font-weight:700; font-size:.95rem; letter-spacing:.08em; text-transform:uppercase; cursor:pointer; transition:background .15s,box-shadow .15s; }
+    .btn-primary-green:hover { background:var(--green-glow); box-shadow:0 0 20px rgba(82,183,136,.3); }
+    .btn-ghost-dark { flex:1; background:transparent; color:var(--cream-dim); border:1px solid var(--border-mid); padding:16px 20px; font-family:var(--font-body); font-size:.82rem; font-weight:500; cursor:pointer; transition:all .15s; }
+    .btn-ghost-dark:hover { border-color:var(--cream-dim); color:var(--cream); }
+    .activation-footer { padding:28px 0 40px; border-top:1px solid var(--border); margin-top:32px; font-size:.7rem; color:var(--cream-faint); font-style:italic; }
+
+    /* ── Dev nav ────────────────────────────────── */
+    .dev-nav { position:fixed; bottom:20px; right:20px; display:flex; flex-wrap:wrap; gap:6px; z-index:100; max-width:320px; justify-content:flex-end; }
+    .dev-nav button { padding:6px 12px; font-family:var(--font-body); font-size:.65rem; font-weight:600; letter-spacing:.06em; text-transform:uppercase; background:var(--surface); color:var(--cream-dim); border:1px solid var(--border-mid); cursor:pointer; transition:all .15s; }
+    .dev-nav button:hover { color:var(--cream); border-color:var(--cream-dim); }
+    .dev-nav button.current { background:var(--green); color:var(--bg); border-color:var(--green); }
+
+    /* ── Animations ─────────────────────────────── */
+    @keyframes fade-up { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+    .animate-in { animation:fade-up .45s cubic-bezier(0.16,1,0.3,1) both; }
+    .stagger-1 { animation-delay:.05s; }
+    .stagger-2 { animation-delay:.12s; }
+    .stagger-3 { animation-delay:.20s; }
+    .stagger-4 { animation-delay:.28s; }
+    .stagger-5 { animation-delay:.36s; }
+
+    .field-divider { height:1px; background:var(--border); margin:28px 0; }
+
+    /* ── Notification badge ─────────────────────── */
+    .notif-btn {
+      position: relative;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .notif-badge {
+      width: 18px; height: 18px;
+      border-radius: 50%;
+      background: var(--green);
+      color: var(--bg);
+      font-size: 0.6rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 8px rgba(82,183,136,0.5);
+    }
+
+    /* ── Committed state ────────────────────────── */
+    .committed-confirm {
+      background: var(--green-faint);
+      border: 1px solid var(--border-mid);
+      border-left: 3px solid var(--green);
+      padding: 20px 22px;
+      margin-bottom: 14px;
+    }
+    .committed-confirm-label {
+      font-size: 0.65rem;
+      font-weight: 600;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--green);
+      margin-bottom: 6px;
+    }
+    .committed-confirm-body {
+      font-size: 0.82rem;
+      color: var(--cream-dim);
+      line-height: 1.55;
+    }
+    .withdraw-link {
+      display: block;
+      text-align: center;
+      font-size: 0.72rem;
+      color: var(--cream-faint);
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 10px 0;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      transition: color 0.15s;
+    }
+    .withdraw-link:hover { color: var(--cream-dim); }
+
+    /* ── Locked/activated state ─────────────────── */
+    .locked-block {
+      background: var(--surface);
+      border: 1px solid var(--border-mid);
+      border-left: 3px solid var(--green);
+      padding: 22px 22px 18px;
+      margin-bottom: 14px;
+    }
+    .locked-label {
+      font-size: 0.63rem;
+      font-weight: 600;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--green);
+      margin-bottom: 8px;
+    }
+    .locked-body {
+      font-size: 0.82rem;
+      color: var(--cream-dim);
+      line-height: 1.55;
+      margin-bottom: 16px;
+    }
+    .view-statement-btn {
+      width: 100%;
+      background: var(--green);
+      color: var(--bg);
+      border: none;
+      padding: 16px 22px;
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 1rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: background 0.15s, box-shadow 0.15s;
+    }
+    .view-statement-btn:hover {
+      background: var(--green-glow);
+      box-shadow: 0 0 20px rgba(82,183,136,0.3);
+    }
+
+    /* ── Expired state ──────────────────────────── */
+    .expired-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 0.63rem;
+      font-weight: 600;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--cream-faint);
+      margin-bottom: 20px;
+      border: 1px solid var(--border-mid);
+      padding: 6px 12px;
+    }
+    .threshold-bar-fill.expired {
+      background: var(--cream-faint);
+      box-shadow: none;
+    }
+    .threshold-current.expired { color: var(--cream-dim); text-shadow: none; }
+    .expired-action {
+      background: var(--surface);
+      border: 1px solid var(--border-mid);
+      padding: 20px 22px;
+      margin-bottom: 14px;
+    }
+    .expired-action-label {
+      font-size: 0.63rem;
+      font-weight: 600;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--cream-faint);
+      margin-bottom: 8px;
+    }
+    .expired-action-body {
+      font-size: 0.82rem;
+      color: var(--cream-dim);
+      line-height: 1.55;
+      margin-bottom: 16px;
+    }
+    .similar-btn {
+      width: 100%;
+      background: transparent;
+      color: var(--cream-dim);
+      border: 1px solid var(--border-mid);
+      padding: 15px 22px;
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 0.95rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: all 0.15s;
+    }
+    .similar-btn:hover { border-color: var(--green-dim); color: var(--cream); }
+
+    /* ── Notifications screen ───────────────────── */
+    .notif-header {
+      padding: 36px 0 24px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 0;
+    }
+    .notif-heading {
+      font-family: var(--font-display);
+      font-weight: 900;
+      font-size: 2rem;
+      text-transform: uppercase;
+      color: var(--cream);
+    }
+    .notif-list { margin-bottom: 40px; }
+    .notif-item {
+      display: flex;
+      gap: 16px;
+      padding: 22px 0;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      transition: opacity 0.15s;
+    }
+    .notif-item:hover { opacity: 0.8; }
+    .notif-item.unread .notif-text-heading { color: var(--cream); }
+    .notif-indicator {
+      width: 8px;
+      flex-shrink: 0;
+      padding-top: 5px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .notif-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 6px rgba(82,183,136,0.5);
+    }
+    .notif-dot.dim { background: var(--cream-faint); box-shadow: none; }
+    .notif-content { flex: 1; }
+    .notif-type {
+      font-size: 0.6rem;
+      font-weight: 600;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--green);
+      margin-bottom: 4px;
+    }
+    .notif-type.expired-type { color: var(--cream-faint); }
+    .notif-type.info-type { color: var(--cream-dim); }
+    .notif-text-heading {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 1rem;
+      color: var(--cream-dim);
+      margin-bottom: 4px;
+      line-height: 1.2;
+    }
+    .notif-text-body {
+      font-size: 0.78rem;
+      color: var(--cream-faint);
+      line-height: 1.5;
+    }
+    .notif-time {
+      font-size: 0.65rem;
+      color: var(--cream-faint);
+      white-space: nowrap;
+      padding-top: 4px;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════ -->
+<!-- SCREEN: WORKSPACE HOME                      -->
+<!-- ════════════════════════════════════════════ -->
+<div id="screen-home" class="screen active">
+  <div class="container">
+    <div class="topbar">
+      <span class="topbar-wordmark">Wrkr</span>
+      <span class="topbar-status">
+        <span class="anon-dot"></span>Anonymous · 47 members
+        <button class="notif-btn" onclick="goTo('screen-notifications')" style="margin-left:10px">
+          <span class="notif-badge">2</span>
+        </button>
+      </span>
+    </div>
+    <div class="workspace-hero animate-in">
+      <div class="workspace-label">Your workspace</div>
+      <div class="workspace-name">Meridian<br>Healthcare</div>
+      <div class="workspace-meta"><strong>47</strong> verified members &nbsp;·&nbsp; <strong>3</strong> active proposals</div>
+    </div>
+    <div class="list-header animate-in stagger-1">
+      <span class="list-title">Active proposals</span>
+      <button class="start-btn" onclick="goTo('screen-create-1')">+ Start a proposal</button>
+    </div>
+    <div class="proposal-list">
+      <div class="proposal-item animate-in stagger-2" onclick="goTo('screen-detail')">
+        <div class="proposal-category">Working Conditions</div>
+        <div class="proposal-framing">Flexible Start Times</div>
+        <div class="proposal-summary">Workers need the ability to adjust start times within a 2-hour window based on personal obligations and commute conditions.</div>
+        <div class="progress-row">
+          <div class="progress-bar-track"><div class="progress-bar-fill" style="width:80%"></div></div>
+          <div class="progress-fraction">32 <span>/ 40</span></div>
+        </div>
+        <div class="proposal-deadline">Closes in 8 days</div>
+      </div>
+      <div class="proposal-item animate-in stagger-3" onclick="goTo('screen-detail')">
+        <div class="proposal-category">Compensation</div>
+        <div class="proposal-framing">Remote Work Equipment Stipend</div>
+        <div class="proposal-summary">Home office workers should receive a one-time equipment stipend to cover the cost of professional-grade workstations.</div>
+        <div class="progress-row">
+          <div class="progress-bar-track"><div class="progress-bar-fill" style="width:37%"></div></div>
+          <div class="progress-fraction">13 <span>/ 35</span></div>
+        </div>
+        <div class="proposal-deadline">Closes in 21 days</div>
+      </div>
+      <div class="proposal-item animate-in stagger-4" onclick="goTo('screen-detail')">
+        <div class="proposal-category">Other</div>
+        <div class="proposal-framing">All-Staff Monthly Updates</div>
+        <div class="proposal-summary">Leadership should hold a structured monthly briefing open to all staff, with written summaries distributed within 24 hours.</div>
+        <div class="progress-row">
+          <div class="progress-bar-track"><div class="progress-bar-fill" style="width:55%"></div></div>
+          <div class="progress-fraction">22 <span>/ 40</span></div>
+        </div>
+        <div class="proposal-deadline">Closes in 14 days</div>
+      </div>
+    </div>
+    <div class="bottom-bar animate-in stagger-5">
+      <span class="bottom-note">You are anonymous. Your identity is never stored.</span>
+    </div>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════════ -->
+<!-- SCREEN: PROPOSAL DETAIL                     -->
+<!-- ════════════════════════════════════════════ -->
+<div id="screen-detail" class="screen">
+  <div class="container">
+    <div class="topbar">
+      <span class="topbar-wordmark">Wrkr</span>
+      <span class="topbar-status"><span class="anon-dot"></span>Anonymous · 47 members</span>
+    </div>
+    <button class="back-link" onclick="goTo('screen-home')">← Workspace</button>
+    <div class="detail-divider"></div>
+    <div class="detail-category">Working Conditions</div>
+    <h1 class="detail-heading">Flexible<br>Start Times</h1>
+    <p class="detail-body">Workers need the ability to adjust their start times within a 2-hour window based on personal obligations, family care, and commute conditions. A rigid 9am start has created unnecessary stress and reduced retention without operational benefit.</p>
+    <p class="detail-body">If this threshold is reached, we sign a collective message requesting that HR and leadership formally review and propose a flexible start-time policy within 30 days.</p>
+    <div class="threshold-block">
+      <div class="threshold-label">Threshold progress</div>
+      <div class="threshold-numbers">
+        <span class="threshold-current" id="count-display">32</span>
+        <span class="threshold-sep">/</span>
+        <span class="threshold-needed">40</span>
+        <span class="threshold-unit">workers committed</span>
+      </div>
+      <div class="threshold-bar-track"><div class="threshold-bar-fill" id="detail-bar"></div></div>
+      <div class="threshold-sub">8 workers needed &nbsp;·&nbsp; Closes May 25, 2026</div>
+    </div>
+    <div class="action-divider"></div>
+    <div class="action-label">If 40 workers commit, all commitments activate simultaneously — no one acts alone.<br>Your identity is never revealed, before or after threshold.</div>
+    <button class="commit-btn" onclick="triggerActivation()">
+      <span>Commit if 40 agree</span><span class="commit-btn-arrow">→</span>
+    </button>
+    <div class="commit-note">You can withdraw any time before the threshold is reached.</div>
+    <div class="detail-deadline">Proposal closes <strong>May 25, 2026</strong> &nbsp;·&nbsp; Created anonymously</div>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════════ -->
+<!-- SCREEN: THRESHOLD ACTIVATION                -->
+<!-- ════════════════════════════════════════════ -->
+<div id="screen-activation" class="screen">
+  <div class="container">
+    <div class="activation-topbar">
+      <span class="activation-wordmark">Wrkr</span>
+      <span class="activation-status"><span class="pulse-dot"></span>Threshold reached</span>
+    </div>
+    <div class="activation-hero">
+      <div class="activation-eyebrow animate-in">Meridian Healthcare · Working Conditions</div>
+      <div class="activation-count animate-in stagger-1">40</div>
+      <div class="activation-count-label animate-in stagger-2">Workers<br>Committed</div>
+    </div>
+    <div class="activation-rule"></div>
+    <div class="activation-statement-label">Collective statement · May 17, 2026</div>
+    <div class="activation-statement animate-in stagger-3">
+      <div class="statement-heading">Flexible Start Times — Collective Request</div>
+      <div class="statement-body">Forty (40) verified employees of Meridian Healthcare have committed to requesting a formal review of the company's current mandatory 9am start policy. We request that HR and leadership propose a flexible start-time framework within 30 days of receiving this statement.</div>
+      <div class="statement-attestation">✓ Threshold reached May 17, 2026 · 40 of 47 verified members · Anonymous attestation</div>
+    </div>
+    <div class="activation-actions animate-in stagger-4">
+      <button class="btn-primary-green">Save statement</button>
+      <button class="btn-ghost-dark" onclick="goTo('screen-home')">Back to workspace</button>
+    </div>
+    <div class="activation-footer animate-in stagger-5">Individual identities remain anonymous. This document attests to collective support — not individual participation.</div>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════════ -->
+<!-- SCREEN: CREATE — STEP 1: CATEGORY           -->
+<!-- ════════════════════════════════════════════ -->
+<div id="screen-create-1" class="screen">
+  <div class="container">
+    <div class="topbar">
+      <span class="topbar-wordmark">Wrkr</span>
+      <span class="topbar-status"><span class="anon-dot"></span>Anonymous</span>
+    </div>
+    <div class="step-header">
+      <span class="step-label">Step 1 of 4</span>
+      <button class="step-back" onclick="goTo('screen-home')">✕ Cancel</button>
+    </div>
+    <div class="step-bar-track"><div class="step-bar-fill" style="width:25%"></div></div>
+
+    <div class="step-heading animate-in">What is this<br>about?</div>
+    <div class="step-sub animate-in stagger-1">Choose the category that best fits the concern.</div>
+
+    <div class="category-list animate-in stagger-2">
+      <div class="category-card" id="cat-comp" onclick="selectCategory('comp')">
+        <div class="category-card-name">Compensation</div>
+        <div class="category-card-desc">Pay, benefits, equity, bonuses, or financial wellbeing</div>
+      </div>
+      <div class="category-card" id="cat-work" onclick="selectCategory('work')">
+        <div class="category-card-name">Working Conditions</div>
+        <div class="category-card-desc">Hours, flexibility, environment, workload, or scheduling</div>
+      </div>
+      <div class="category-card" id="cat-other" onclick="selectCategory('other')">
+        <div class="category-card-name">Other</div>
+        <div class="category-card-desc">Communication, culture, safety, or anything else</div>
+      </div>
+    </div>
+
+    <button class="btn-primary" id="cat-next-btn" disabled onclick="goTo('screen-create-2')">
+      <span>Continue</span><span>→</span>
+    </button>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════════ -->
+<!-- SCREEN: CREATE — STEP 2: FRAMING            -->
+<!-- ════════════════════════════════════════════ -->
+<div id="screen-create-2" class="screen">
+  <div class="container">
+    <div class="topbar">
+      <span class="topbar-wordmark">Wrkr</span>
+      <span class="topbar-status"><span class="anon-dot"></span>Anonymous</span>
+    </div>
+    <div class="step-header">
+      <span class="step-label">Step 2 of 4</span>
+      <button class="step-back" onclick="goTo('screen-create-1')">← Back</button>
+    </div>
+    <div class="step-bar-track"><div class="step-bar-fill" style="width:50%"></div></div>
+
+    <div class="step-heading animate-in">Frame<br>the concern</div>
+    <div class="step-sub animate-in stagger-1">Be specific and factual. Names and personal details will be flagged and must be removed before publishing.</div>
+
+    <div class="field-block animate-in stagger-2">
+      <label class="field-label">What is the specific issue?</label>
+      <div class="field-context">Describe the concern in a way any coworker would recognise.</div>
+      <textarea class="field-textarea" id="concern-field" maxlength="280" placeholder="e.g. The mandatory 9am start time creates difficulty for workers with childcare or long commutes..." rows="4" oninput="updateCounter(this,'concern-counter',280)"></textarea>
+      <div class="char-counter" id="concern-counter">0 / 280</div>
+    </div>
+
+    <div class="field-divider"></div>
+
+    <div class="field-block animate-in stagger-3">
+      <label class="field-label">What outcome would address this?</label>
+      <div class="option-pills" id="outcome-pills">
+        <div class="option-pill" onclick="selectPill(this)">A formal policy change</div>
+        <div class="option-pill" onclick="selectPill(this)">A leadership review</div>
+        <div class="option-pill" onclick="selectPill(this)">A written commitment</div>
+        <div class="option-pill" onclick="selectPill(this)">More resources</div>
+        <div class="option-pill" onclick="selectPill(this)">Other</div>
+      </div>
+    </div>
+
+    <div class="field-divider"></div>
+
+    <div class="field-block animate-in stagger-4">
+      <label class="field-label">If the threshold is reached, workers will</label>
+      <div style="background:var(--green-faint); border:1px solid var(--border-mid); border-left:3px solid var(--green); padding:16px 18px;">
+        <div style="font-family:var(--font-display); font-weight:700; font-size:1rem; text-transform:uppercase; color:var(--green-glow);">Sign a collective message</div>
+        <div style="font-size:0.78rem; color:var(--cream-dim); margin-top:4px;">A signed statement with threshold attestation is generated and shared with all committed workers.</div>
+      </div>
+    </div>
+
+    <button class="btn-primary animate-in stagger-5" onclick="goTo('screen-create-3')">
+      <span>Continue</span><span>→</span>
+    </button>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════════ -->
+<!-- SCREEN: CREATE — STEP 3: THRESHOLD          -->
+<!-- ════════════════════════════════════════════ -->
+<div id="screen-create-3" class="screen">
+  <div class="container">
+    <div class="topbar">
+      <span class="topbar-wordmark">Wrkr</span>
+      <span class="topbar-status"><span class="anon-dot"></span>Anonymous</span>
+    </div>
+    <div class="step-header">
+      <span class="step-label">Step 3 of 4</span>
+      <button class="step-back" onclick="goTo('screen-create-2')">← Back</button>
+    </div>
+    <div class="step-bar-track"><div class="step-bar-fill" style="width:75%"></div></div>
+
+    <div class="step-heading animate-in">Set the<br>threshold</div>
+    <div class="step-sub animate-in stagger-1">How many workers need to commit before the action activates?</div>
+
+    <div class="field-block animate-in stagger-2">
+      <label class="field-label">Number of workers</label>
+      <div class="threshold-display">
+        <div class="threshold-input-wrap">
+          <button class="threshold-adj" onclick="adjustThreshold(-1)">−</button>
+          <div class="threshold-val" id="threshold-val">35</div>
+          <button class="threshold-adj" onclick="adjustThreshold(1)">+</button>
+        </div>
+        <span class="threshold-of">of</span>
+        <span class="threshold-total">47</span>
+        <span class="threshold-unit-label">verified members</span>
+      </div>
+      <div class="threshold-preview" id="threshold-preview">
+        <strong>35 workers</strong> need to commit — that's 74% of your workspace. This is a strong, credible threshold.
+      </div>
+    </div>
+
+    <div class="field-divider"></div>
+
+    <div class="field-block animate-in stagger-3">
+      <label class="field-label">Deadline</label>
+      <div class="deadline-pills">
+        <div class="deadline-pill" id="dl-7"  onclick="selectDeadline(7)">7 days</div>
+        <div class="deadline-pill selected" id="dl-14" onclick="selectDeadline(14)">14 days</div>
+        <div class="deadline-pill" id="dl-30" onclick="selectDeadline(30)">30 days</div>
+      </div>
+    </div>
+
+    <button class="btn-primary animate-in stagger-4" onclick="goTo('screen-create-4')">
+      <span>Review proposal</span><span>→</span>
+    </button>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════════ -->
+<!-- SCREEN: CREATE — STEP 4: REVIEW             -->
+<!-- ════════════════════════════════════════════ -->
+<div id="screen-create-4" class="screen">
+  <div class="container">
+    <div class="topbar">
+      <span class="topbar-wordmark">Wrkr</span>
+      <span class="topbar-status"><span class="anon-dot"></span>Anonymous</span>
+    </div>
+    <div class="step-header">
+      <span class="step-label">Step 4 of 4</span>
+      <button class="step-back" onclick="goTo('screen-create-3')">← Back</button>
+    </div>
+    <div class="step-bar-track"><div class="step-bar-fill" style="width:100%"></div></div>
+
+    <div class="step-heading animate-in">Review &<br>publish</div>
+    <div class="step-sub animate-in stagger-1">Once published, the proposal is visible to all 47 verified members.</div>
+
+    <div class="review-card animate-in stagger-2">
+      <div class="review-row">
+        <span class="review-key">Category</span>
+        <span class="review-val">Working Conditions</span>
+      </div>
+      <div class="review-row">
+        <span class="review-key">Concern</span>
+        <span class="review-val">The mandatory 9am start time creates difficulty for workers with childcare or long commutes, and has no clear operational justification.</span>
+      </div>
+      <div class="review-row">
+        <span class="review-key">Outcome sought</span>
+        <span class="review-val">A formal policy change</span>
+      </div>
+      <div class="review-row">
+        <span class="review-key">If threshold met</span>
+        <span class="review-val">Sign a collective message</span>
+      </div>
+      <div class="review-row">
+        <span class="review-key">Threshold</span>
+        <span class="review-val green">35 of 47 workers (74%)</span>
+      </div>
+      <div class="review-row">
+        <span class="review-key">Deadline</span>
+        <span class="review-val">14 days</span>
+      </div>
+      <div class="review-row">
+        <span class="review-key">Attribution</span>
+        <span class="review-val">Fully anonymous</span>
+      </div>
+    </div>
+
+    <div class="anon-badge animate-in stagger-3">This proposal will be published anonymously — your identity is not recorded</div>
+
+    <button class="btn-primary animate-in stagger-4" onclick="goTo('screen-submitted')">
+      <span>Publish anonymously</span><span>→</span>
+    </button>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════════ -->
+<!-- SCREEN: SUBMITTED                           -->
+<!-- ════════════════════════════════════════════ -->
+<div id="screen-submitted" class="screen">
+  <div class="container">
+    <div class="topbar">
+      <span class="topbar-wordmark">Wrkr</span>
+      <span class="topbar-status"><span class="anon-dot"></span>Anonymous · 47 members</span>
+    </div>
+    <div class="submitted-hero animate-in">
+      <div class="submitted-check">✓ Proposal submitted</div>
+      <div class="submitted-heading">Your proposal<br>is live.</div>
+      <p class="submitted-body">It will appear in the workspace within 30 minutes. All 47 verified members will be notified anonymously.</p>
+    </div>
+    <div class="submitted-detail animate-in stagger-1">
+      <div class="submitted-detail-label">What happens next</div>
+      <div class="submitted-detail-val">Workers can view and commit to the proposal. You'll be notified when the threshold is reached or when it expires — the same as everyone else.</div>
+    </div>
+    <div class="submitted-actions animate-in stagger-2">
+      <button class="btn-primary" style="margin-bottom:0" onclick="goTo('screen-home')">
+        <span>Back to workspace</span><span>→</span>
+      </button>
+      <button class="btn-ghost">Copy invite link — bring more coworkers in</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════════ -->
+<!-- SCREEN: EMPTY STATE                         -->
+<!-- ════════════════════════════════════════════ -->
+<div id="screen-empty" class="screen">
+  <div class="container" style="display:flex; flex-direction:column; min-height:100vh;">
+    <div class="topbar">
+      <span class="topbar-wordmark">Wrkr</span>
+      <span class="topbar-status"><span class="anon-dot"></span>Anonymous · 6 members</span>
+    </div>
+
+    <div class="empty-hero animate-in">
+      <div class="empty-workspace-label">Your workspace</div>
+      <div class="empty-workspace-name">Meridian<br>Healthcare</div>
+      <div class="empty-workspace-meta"><strong>6</strong> verified members</div>
+    </div>
+
+    <div class="empty-body">
+      <div class="empty-zero animate-in stagger-1">0</div>
+      <div class="empty-label animate-in stagger-2">Active proposals</div>
+      <p class="empty-message animate-in stagger-3">
+        No one has started a proposal yet. You can be the first — or invite more coworkers so there's a group ready to act when one appears.
+      </p>
+      <div class="empty-actions animate-in stagger-4">
+        <button class="btn-primary-sm" onclick="goTo('screen-create-1')">+ Start a proposal</button>
+        <button class="btn-ghost-sm">Copy invite link</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════════ -->
+<!-- SCREEN: PROPOSAL DETAIL — COMMITTED STATE   -->
+<!-- ════════════════════════════════════════════ -->
+<div id="screen-committed" class="screen">
+  <div class="container">
+    <div class="topbar">
+      <span class="topbar-wordmark">Wrkr</span>
+      <span class="topbar-status"><span class="anon-dot"></span>Anonymous · 47 members</span>
+    </div>
+    <button class="back-link" onclick="goTo('screen-home')">← Workspace</button>
+    <div class="detail-divider"></div>
+    <div class="detail-category">Working Conditions</div>
+    <h1 class="detail-heading">Flexible<br>Start Times</h1>
+    <p class="detail-body">Workers need the ability to adjust their start times within a 2-hour window based on personal obligations, family care, and commute conditions.</p>
+    <p class="detail-body">If this threshold is reached, we sign a collective message requesting that HR and leadership formally review and propose a flexible start-time policy within 30 days.</p>
+
+    <div class="threshold-block">
+      <div class="threshold-label">Threshold progress</div>
+      <div class="threshold-numbers">
+        <span class="threshold-current">33</span>
+        <span class="threshold-sep">/</span>
+        <span class="threshold-needed">40</span>
+        <span class="threshold-unit">workers committed</span>
+      </div>
+      <div class="threshold-bar-track">
+        <div class="threshold-bar-fill" style="width:82.5%"></div>
+      </div>
+      <div class="threshold-sub">7 workers needed &nbsp;·&nbsp; Closes May 25, 2026</div>
+    </div>
+
+    <div class="action-divider"></div>
+
+    <div class="committed-confirm">
+      <div class="committed-confirm-label">✓ You've committed</div>
+      <div class="committed-confirm-body">Your commitment is recorded anonymously. If 40 workers commit, you'll all be notified simultaneously — no one acts alone.</div>
+    </div>
+    <button class="withdraw-link">Withdraw my commitment</button>
+    <div class="detail-deadline">Proposal closes <strong>May 25, 2026</strong> &nbsp;·&nbsp; Created anonymously</div>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════════ -->
+<!-- SCREEN: PROPOSAL DETAIL — LOCKED/ACTIVATED  -->
+<!-- ════════════════════════════════════════════ -->
+<div id="screen-locked" class="screen">
+  <div class="container">
+    <div class="topbar">
+      <span class="topbar-wordmark">Wrkr</span>
+      <span class="topbar-status"><span class="anon-dot"></span>Anonymous · 47 members</span>
+    </div>
+    <button class="back-link" onclick="goTo('screen-home')">← Workspace</button>
+    <div class="detail-divider"></div>
+    <div class="detail-category">Working Conditions</div>
+    <h1 class="detail-heading">Flexible<br>Start Times</h1>
+    <p class="detail-body">Workers needed the ability to adjust their start times within a 2-hour window based on personal obligations, family care, and commute conditions.</p>
+
+    <div class="threshold-block">
+      <div class="threshold-label">Threshold reached</div>
+      <div class="threshold-numbers">
+        <span class="threshold-current">40</span>
+        <span class="threshold-sep">/</span>
+        <span class="threshold-needed">40</span>
+        <span class="threshold-unit">workers committed</span>
+      </div>
+      <div class="threshold-bar-track">
+        <div class="threshold-bar-fill" style="width:100%; box-shadow: 0 0 16px rgba(82,183,136,0.7)"></div>
+      </div>
+      <div class="threshold-sub">Activated May 17, 2026</div>
+    </div>
+
+    <div class="action-divider"></div>
+
+    <div class="locked-block">
+      <div class="locked-label">✓ Threshold reached — May 17, 2026</div>
+      <div class="locked-body">40 workers committed and the collective statement was generated. You were one of them.</div>
+      <button class="view-statement-btn" onclick="goTo('screen-activation')">
+        <span>View collective statement</span><span>→</span>
+      </button>
+    </div>
+    <div class="detail-deadline">Proposal closed <strong>May 17, 2026</strong> &nbsp;·&nbsp; Created anonymously</div>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════════ -->
+<!-- SCREEN: PROPOSAL EXPIRED                    -->
+<!-- ════════════════════════════════════════════ -->
+<div id="screen-expired" class="screen">
+  <div class="container">
+    <div class="topbar">
+      <span class="topbar-wordmark">Wrkr</span>
+      <span class="topbar-status"><span class="anon-dot"></span>Anonymous · 47 members</span>
+    </div>
+    <button class="back-link" onclick="goTo('screen-home')">← Workspace</button>
+    <div class="detail-divider"></div>
+
+    <div class="expired-badge">
+      <span style="width:6px;height:6px;border-radius:50%;background:var(--cream-faint);display:inline-block"></span>
+      Closed · Did not reach threshold
+    </div>
+
+    <div class="detail-category">Compensation</div>
+    <h1 class="detail-heading">Remote Work<br>Equipment Stipend</h1>
+    <p class="detail-body">Home office workers should receive a one-time equipment stipend to cover the cost of professional-grade workstations.</p>
+
+    <div class="threshold-block" style="border-left-color: var(--cream-faint)">
+      <div class="threshold-label" style="color:var(--cream-faint)">Final count</div>
+      <div class="threshold-numbers">
+        <span class="threshold-current expired">28</span>
+        <span class="threshold-sep">/</span>
+        <span class="threshold-needed">35</span>
+        <span class="threshold-unit">workers committed</span>
+      </div>
+      <div class="threshold-bar-track">
+        <div class="threshold-bar-fill expired" style="width:80%"></div>
+      </div>
+      <div class="threshold-sub">Closed May 7, 2026 · 7 workers short of threshold</div>
+    </div>
+
+    <div class="action-divider"></div>
+
+    <div class="expired-action">
+      <div class="expired-action-label">What now</div>
+      <div class="expired-action-body">This proposal didn't reach its threshold — no action was taken and no one's commitment was exposed. The concern is still valid. Anyone can start a new proposal based on this one.</div>
+      <button class="similar-btn" onclick="goTo('screen-create-1')">
+        <span>Start a similar proposal</span><span>→</span>
+      </button>
+    </div>
+    <div class="detail-deadline">Proposal closed <strong>May 7, 2026</strong> &nbsp;·&nbsp; Created anonymously</div>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════════ -->
+<!-- SCREEN: NOTIFICATIONS                       -->
+<!-- ════════════════════════════════════════════ -->
+<div id="screen-notifications" class="screen">
+  <div class="container">
+    <div class="topbar">
+      <span class="topbar-wordmark">Wrkr</span>
+      <span class="topbar-status"><span class="anon-dot"></span>Anonymous · 47 members</span>
+    </div>
+
+    <div class="notif-header">
+      <div class="notif-heading">Notifications</div>
+    </div>
+
+    <div class="notif-list">
+
+      <div class="notif-item unread" onclick="goTo('screen-locked')">
+        <div class="notif-indicator"><div class="notif-dot"></div></div>
+        <div class="notif-content">
+          <div class="notif-type">Threshold reached</div>
+          <div class="notif-text-heading">Flexible Start Times</div>
+          <div class="notif-text-body">40 workers committed. The collective statement is ready to view.</div>
+        </div>
+        <div class="notif-time">2h ago</div>
+      </div>
+
+      <div class="notif-item unread" onclick="goTo('screen-detail')">
+        <div class="notif-indicator"><div class="notif-dot"></div></div>
+        <div class="notif-content">
+          <div class="notif-type">New proposal</div>
+          <div class="notif-text-heading">All-Staff Monthly Updates</div>
+          <div class="notif-text-body">A new proposal was published in your workspace.</div>
+        </div>
+        <div class="notif-time">1d ago</div>
+      </div>
+
+      <div class="notif-item" onclick="goTo('screen-detail')">
+        <div class="notif-indicator"><div class="notif-dot dim"></div></div>
+        <div class="notif-content">
+          <div class="notif-type info-type">Closing soon</div>
+          <div class="notif-text-heading">Remote Work Equipment Stipend</div>
+          <div class="notif-text-body">3 days left. 13 of 35 workers have committed.</div>
+        </div>
+        <div class="notif-time">2d ago</div>
+      </div>
+
+      <div class="notif-item" onclick="goTo('screen-expired')">
+        <div class="notif-indicator"><div class="notif-dot dim"></div></div>
+        <div class="notif-content">
+          <div class="notif-type expired-type">Proposal expired</div>
+          <div class="notif-text-heading">Remote Work Equipment Stipend</div>
+          <div class="notif-text-body">Closed without reaching threshold. 28 of 35 committed — no action taken, no one exposed.</div>
+        </div>
+        <div class="notif-time">5d ago</div>
+      </div>
+
+    </div>
+
+    <button class="back-link" style="padding:0 0 40px" onclick="goTo('screen-home')">← Back to workspace</button>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════════ -->
+<!-- DEV NAV                                     -->
+<!-- ════════════════════════════════════════════ -->
+<div class="dev-nav">
+  <button id="nav-home"       class="current" onclick="goTo('screen-home')">Home</button>
+  <button id="nav-detail"                     onclick="goTo('screen-detail')">Detail</button>
+  <button id="nav-activation"                 onclick="goTo('screen-activation')">Activation</button>
+  <button id="nav-create-1"                   onclick="goTo('screen-create-1')">Create 1</button>
+  <button id="nav-create-2"                   onclick="goTo('screen-create-2')">Create 2</button>
+  <button id="nav-create-3"                   onclick="goTo('screen-create-3')">Create 3</button>
+  <button id="nav-create-4"                   onclick="goTo('screen-create-4')">Create 4</button>
+  <button id="nav-submitted"                  onclick="goTo('screen-submitted')">Submitted</button>
+  <button id="nav-empty"                      onclick="goTo('screen-empty')">Empty</button>
+  <button id="nav-committed"                  onclick="goTo('screen-committed')">Committed</button>
+  <button id="nav-locked"                     onclick="goTo('screen-locked')">Locked</button>
+  <button id="nav-expired"                    onclick="goTo('screen-expired')">Expired</button>
+  <button id="nav-notifications"              onclick="goTo('screen-notifications')">Notifs</button>
+</div>
+
+
+<script>
+  const screens = [
+    'screen-home','screen-detail','screen-activation',
+    'screen-create-1','screen-create-2','screen-create-3','screen-create-4',
+    'screen-submitted','screen-empty',
+    'screen-committed','screen-locked','screen-expired','screen-notifications'
+  ];
+  const navIds = [
+    'nav-home','nav-detail','nav-activation',
+    'nav-create-1','nav-create-2','nav-create-3','nav-create-4',
+    'nav-submitted','nav-empty',
+    'nav-committed','nav-locked','nav-expired','nav-notifications'
+  ];
+
+  function goTo(id) {
+    screens.forEach(s => document.getElementById(s).classList.remove('active'));
+    navIds.forEach(n => document.getElementById(n).classList.remove('current'));
+    document.getElementById(id).classList.add('active');
+    const idx = screens.indexOf(id);
+    if (idx >= 0) document.getElementById(navIds[idx]).classList.add('current');
+    if (id === 'screen-detail') initDetailBar();
+    if (id === 'screen-activation') initActivation();
+    window.scrollTo(0,0);
+  }
+
+  // ── Detail bar
+  function initDetailBar() {
+    const bar = document.getElementById('detail-bar');
+    bar.style.transition = 'none';
+    bar.style.width = '0%';
+    requestAnimationFrame(() => {
+      bar.style.transition = 'width 1s cubic-bezier(0.16,1,0.3,1)';
+      bar.style.width = '80%';
+    });
+  }
+
+  function triggerActivation() {
+    const bar   = document.getElementById('detail-bar');
+    const count = document.getElementById('count-display');
+    bar.style.transition = 'width 0.5s cubic-bezier(0.16,1,0.3,1)';
+    bar.style.width = '100%';
+    bar.style.boxShadow = '0 0 20px rgba(82,183,136,0.7)';
+    let n = 32;
+    const tick = setInterval(() => {
+      n++;
+      count.textContent = n;
+      if (n >= 40) { clearInterval(tick); setTimeout(() => goTo('screen-activation'), 500); }
+    }, 55);
+  }
+
+  function initActivation() {
+    document.querySelectorAll('#screen-activation .animate-in').forEach(el => {
+      el.style.animation = 'none'; el.offsetHeight; el.style.animation = '';
+    });
+  }
+
+  // ── Category selection
+  let selectedCat = null;
+  function selectCategory(cat) {
+    ['comp','work','other'].forEach(c => {
+      document.getElementById('cat-'+c).classList.remove('selected');
+    });
+    document.getElementById('cat-'+cat).classList.add('selected');
+    selectedCat = cat;
+    document.getElementById('cat-next-btn').disabled = false;
+  }
+
+  // ── Outcome pills
+  function selectPill(el) {
+    document.querySelectorAll('#outcome-pills .option-pill').forEach(p => p.classList.remove('selected'));
+    el.classList.add('selected');
+  }
+
+  // ── Char counter
+  function updateCounter(ta, counterId, max) {
+    const counter = document.getElementById(counterId);
+    const len = ta.value.length;
+    counter.textContent = len + ' / ' + max;
+    counter.classList.toggle('warn', len > max * 0.85);
+  }
+
+  // ── Threshold adjuster
+  let thresholdVal = 35;
+  function adjustThreshold(delta) {
+    thresholdVal = Math.max(5, Math.min(47, thresholdVal + delta));
+    document.getElementById('threshold-val').textContent = thresholdVal;
+    const pct = Math.round((thresholdVal / 47) * 100);
+    const preview = document.getElementById('threshold-preview');
+    let note = '';
+    if (pct < 20) note = 'This is a low threshold — it may not feel significant to others.';
+    else if (pct < 50) note = 'A modest threshold — good for early signal gathering.';
+    else if (pct < 75) note = 'A solid, credible threshold for collective action.';
+    else note = 'A strong threshold — ambitious but meaningful if reached.';
+    preview.innerHTML = `<strong>${thresholdVal} workers</strong> need to commit — that's ${pct}% of your workspace. ${note}`;
+  }
+
+  // ── Deadline selection
+  function selectDeadline(days) {
+    [7,14,30].forEach(d => {
+      document.getElementById('dl-'+d).classList.remove('selected');
+    });
+    document.getElementById('dl-'+days).classList.add('selected');
+  }
+</script>
+</body>
+</html>

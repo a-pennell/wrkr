@@ -1,0 +1,116 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Workspaces are identified by domain hash, not domain name.
+// The domain name exists only during OTP verification (in memory).
+model Workspace {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  domainHash String   @unique @map("domain_hash")
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  tokens        WorkspaceToken[]
+  proposals     Proposal[]
+
+  @@map("workspaces")
+}
+
+// Anonymous session tokens — no identity data.
+model WorkspaceToken {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tokenHash   String   @unique @map("token_hash")
+  workspaceId String   @map("workspace_id") @db.Uuid
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  workspace   Workspace @relation(fields: [workspaceId], references: [id])
+
+  @@map("workspace_tokens")
+}
+
+// OTP records — ephemeral, deleted immediately after successful verification.
+// Rows should not exist for more than 5 minutes.
+// Cleanup job: DELETE FROM otp_records WHERE expires_at < NOW()
+model OtpRecord {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  otpHash    String   @map("otp_hash")
+  domainHash String   @map("domain_hash")
+  expiresAt  DateTime @map("expires_at") @db.Timestamptz
+  attempts   Int      @default(0)
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  @@map("otp_records")
+}
+
+// Proposals — template_fields stored as JSON.
+// Proposer identity is not stored; no foreign key to workspace_tokens.
+model Proposal {
+  id             String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  workspaceId    String    @map("workspace_id") @db.Uuid
+  category       String    // 'compensation' | 'working_conditions' | 'other'
+  templateFields Json      @map("template_fields")
+  thresholdType  String    @map("threshold_type")  // 'count' | 'percentage'
+  thresholdValue Int       @map("threshold_value")
+  deadline       DateTime  @db.Timestamptz
+  status         String    @default("pending")
+  // 'pending' | 'active' | 'activated' | 'expired'
+  publishAt      DateTime  @map("publish_at") @db.Timestamptz
+  activatedAt    DateTime? @map("activated_at") @db.Timestamptz
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz
+
+  workspace     Workspace              @relation(fields: [workspaceId], references: [id])
+  commitments   Commitment[]
+  attestation   ThresholdAttestation?
+  notifications Notification[]
+
+  @@map("proposals")
+}
+
+// Commitments — linked to token_hash, not the token record.
+// Allows commitments to survive if a token record is ever deleted.
+// Unique constraint enforced in application: one active commitment per token per proposal.
+model Commitment {
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  proposalId  String    @map("proposal_id") @db.Uuid
+  tokenHash   String    @map("token_hash")
+  committedAt DateTime  @default(now()) @map("committed_at") @db.Timestamptz
+  withdrawnAt DateTime? @map("withdrawn_at") @db.Timestamptz
+
+  proposal    Proposal  @relation(fields: [proposalId], references: [id])
+
+  @@map("commitments")
+}
+
+// Threshold attestation — generated when threshold is reached.
+model ThresholdAttestation {
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  proposalId      String   @unique @map("proposal_id") @db.Uuid
+  activatedAt     DateTime @map("activated_at") @db.Timestamptz
+  commitmentCount Int      @map("commitment_count")
+  statementText   String   @map("statement_text")
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  proposal        Proposal @relation(fields: [proposalId], references: [id])
+
+  @@map("threshold_attestations")
+}
+
+// In-app notifications — polled by clients.
+model Notification {
+  id         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tokenHash  String    @map("token_hash")
+  type       String
+  // 'threshold_reached' | 'proposal_expired' | 'new_proposal'
+  payload    Json
+  readAt     DateTime? @map("read_at") @db.Timestamptz
+  proposalId String?   @map("proposal_id") @db.Uuid
+  createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz
+
+  proposal   Proposal? @relation(fields: [proposalId], references: [id])
+
+  @@map("notifications")
+}
