@@ -47,9 +47,10 @@
 - Workers are advised to access Wrkr from personal devices on personal networks. This is the primary mitigation — architectural mitigations are secondary.
 - The platform does not expose metadata that narrows a visit to a specific proposal or action (e.g., URL path should not indicate which company workspace is being accessed).
 - Company workspaces should not be accessible at predictable, enumerable URLs (e.g., `wrkr.com/company/acme` is bad; workspace routing should be non-enumerable).
-- Consider: a single-page app architecture where all routes resolve to the same server path, making traffic analysis reveal only "this device accessed Wrkr" not "this device accessed this workspace."
+- SPA architecture: all routes resolve to the same server path, so traffic analysis reveals only "this device accessed Wrkr" — not which workspace or proposal.
+- **Encrypted Client Hello (ECH) via Cloudflare** *(implemented)*: ECH encrypts the Server Name Indication (SNI) in the TLS handshake. Normally the hostname (`wrkr.app`) is visible in plaintext to any network observer — corporate proxies, ISPs, employer IT — even over HTTPS. ECH encrypts it so observers see only a TLS connection to a CDN IP. Workers on corporate networks are protected from passive hostname logging. Requires no code changes — routing traffic through Cloudflare enables it automatically on supported browsers (Firefox, Chrome).
 
-**Residual risk:** Medium. Workers accessing from corporate networks or devices remain exposed to corporate traffic analysis. This cannot be fully mitigated by platform architecture — it requires worker education.
+**Residual risk:** Low-Medium. ECH eliminates passive hostname logging for the majority of workers. Workers on networks that perform TLS inspection with a corporate root certificate installed on managed devices remain exposed — this is a device-level compromise outside platform scope. Workers on personal devices and networks are fully protected.
 
 ---
 
@@ -158,8 +159,9 @@
 - Wrkr should maintain a transparency report policy: if compelled to produce data, notify the affected workspace (if legally permitted) and report in aggregate in a transparency report.
 - Retain legal counsel experienced in labor law and platform liability.
 - Consider: jurisdiction selection for data storage (some jurisdictions have stronger protections against compelled disclosure).
+- **Oblivious HTTP (OHTTP) — Phase 2 commitment**: OHTTP routes requests through a neutral relay (e.g., Cloudflare) before reaching Wrkr's servers. The relay sees the worker's IP but not the request content; Wrkr's server sees the request content but not the IP. Neither party has the full picture. Critically: Wrkr's server logs would contain no real IP addresses at all — there is nothing to produce in response to a subpoena. This is a stronger guarantee than IP truncation, which still leaves a /24 subnet in logs. Requires client-side OHTTP library integration, relay infrastructure agreement with a neutral third party, and key management for gateway key rotation. Planned for Phase 2 when the platform makes formal compulsion-resistance guarantees to enterprise and high-risk workspaces.
 
-**Residual risk:** Low. If the data architecture is implemented correctly, compelled production yields: anonymous tokens (no identity), aggregate counts, proposal content (publicly visible within workspace anyway), and truncated IP logs. None of this identifies individual workers.
+**Residual risk:** Low. Compelled production currently yields: anonymous tokens, aggregate counts, proposal content, and /24-truncated IP logs — none of which identifies individual workers. OHTTP (Phase 2) eliminates even the truncated IP, reducing residual risk to near-zero on this threat.
 
 ---
 
@@ -208,7 +210,9 @@
 | Workspace URLs are non-enumerable | T-02 |
 | Proposal publication introduces random micro-delay (0–30 min) | T-05 |
 | Proposal timestamps shown at day/hour granularity only, not minute | T-05 |
+| ECH via Cloudflare — hostname hidden from network observers | T-02 |
 | Server logs truncate IP to /24 subnet | T-08 |
+| OHTTP relay architecture — Wrkr server never receives real IP *(Phase 2)* | T-08 |
 | Aggregate minimum of 5 before any data surfaces | T-03, T-06 |
 | PII screen on all free-form text fields | T-09 |
 | Structured proposal templates (not free-form) | T-09 |

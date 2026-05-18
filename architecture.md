@@ -74,9 +74,11 @@
 
 ## Frontend Architecture
 
-### SPA Routing (Critical for Traffic Analysis Prevention)
+### Network Privacy Architecture
 
-All routes are client-side only. The server serves a single `index.html` for every path. This means a traffic analysis observer can see that a device accessed `wrkr.com` — but cannot determine which workspace, proposal, or action was involved.
+Traffic analysis is addressed in layers. Each layer handles a different observer:
+
+**Layer 1 — SPA routing** (path-level): All routes are client-side only. The server serves a single `index.html` for every path. A network observer cannot determine which workspace, proposal, or action was involved — only that the device accessed `wrkr.app`.
 
 ```
 Server routes:
@@ -90,6 +92,10 @@ Client routes (React Router):
   /w/proposal     →  Proposal detail
   /w/create       →  Proposal creation
 ```
+
+**Layer 2 — Encrypted Client Hello (ECH)** (hostname-level): Traffic is routed through Cloudflare, which enables ECH automatically. ECH encrypts the Server Name Indication (SNI) in the TLS handshake — the field that normally exposes the destination hostname in plaintext. A corporate proxy or ISP monitoring TLS traffic sees a connection to a Cloudflare IP, not `wrkr.app`. Supported by Firefox and Chrome with no client-side implementation required. See [threat-model.md](threat-model.md) T-02.
+
+**Layer 3 — Oblivious HTTP (OHTTP)** *(Phase 2, IP-level)*: Requests are relayed through a neutral third party (Cloudflare or equivalent) before reaching Wrkr's servers. The relay knows the worker's IP but not the request content; Wrkr's server knows the request content but not the IP. Wrkr's server logs contain no real IP addresses — nothing to produce under legal compulsion. Requires client-side OHTTP library, key management, and relay infrastructure agreement. See [threat-model.md](threat-model.md) T-08.
 
 The workspace identifier is **never in the URL**. It lives in localStorage alongside the session token. Deep links to proposals are not supported at Day 1 — workers navigate from workspace home.
 
