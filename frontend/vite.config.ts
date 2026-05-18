@@ -4,7 +4,7 @@ import tailwindcss from '@tailwindcss/vite'
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
-  build: { sourcemap: false },
+  build: { sourcemap: false, target: 'es2020' },
   server: {
     proxy: {
       '/api': {
