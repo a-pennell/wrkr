@@ -1,21 +1,17 @@
 import 'dotenv/config'
 import Fastify from 'fastify'
 import cors from '@fastify/cors'
+import workspaceRoutes from './routes/workspace.js'
+import proposalRoutes from './routes/proposals.js'
 
 const fastify = Fastify({ logger: true })
-
-const FRONTEND_URL = process.env.FRONTEND_URL ?? 'http://localhost:5173'
 const PORT = Number(process.env.PORT) || 3000
 
-fastify.register(cors, { origin: FRONTEND_URL })
+fastify.register(cors, { origin: true })
 
 fastify.get('/health', async () => ({ status: 'ok' }))
-
-// Routes registered here as they are built
-// fastify.register(import('./routes/auth.js'))
-// fastify.register(import('./routes/workspace.js'))
-// fastify.register(import('./routes/proposals.js'))
-// fastify.register(import('./routes/notifications.js'))
+fastify.register(workspaceRoutes)
+fastify.register(proposalRoutes)
 
 const start = async () => {
   try {

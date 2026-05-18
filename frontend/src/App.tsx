@@ -1,13 +1,16 @@
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
+import WorkspacePage from './pages/WorkspacePage'
+import ProposalDetailPage from './pages/ProposalDetailPage'
+import CreateProposalPage from './pages/CreateProposalPage'
 
-function App() {
+export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="*" element={<div style={{ padding: '2rem', color: 'var(--cream)' }}>Wrkr — coming soon</div>} />
+        <Route path="/" element={<WorkspacePage />} />
+        <Route path="/proposal/:id" element={<ProposalDetailPage />} />
+        <Route path="/create" element={<CreateProposalPage />} />
       </Routes>
     </BrowserRouter>
   )
 }
-
-export default App
